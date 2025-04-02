@@ -1,6 +1,7 @@
 'use client';
 
 import * as z from 'zod';
+import { PinWheelLoader } from '../ui/pinwheel';
 import { Calendar } from '~/components/ui/calendar';
 import { cn } from '~/lib/utils';
 import { useForm } from 'react-hook-form';
@@ -9,7 +10,6 @@ import { Checkbox } from '~/components/ui/checkbox';
 import { Avatar, AvatarFallback } from '~/components/ui/avatar';
 import { Input } from '~/components/ui/input';
 import { Textarea } from '~/components/ui/textarea';
-
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CalendarIcon } from 'lucide-react';
@@ -34,6 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '~/components/ui/select';
+
 import {
   Popover,
   PopoverContent,
@@ -329,14 +330,19 @@ export function NewProjectForm() {
 
             <div className='flex justify-end gap-4 pt-4'>
               <Button
+                className='cursor-pointer'
                 type='button'
                 variant='outline'
                 onClick={() => router.push('/projects')}
               >
                 Cancel
               </Button>
-              <Button type='submit' disabled={isSubmitting}>
-                {isSubmitting ? 'Creating...' : 'Create Project'}
+              <Button
+                className='w-full sm:w-[120px] cursor-pointer'
+                type='submit'
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? <PinWheelLoader /> : 'Create Project'}
               </Button>
             </div>
           </form>
