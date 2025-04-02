@@ -6,6 +6,13 @@ import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
 import { NewIssueDialog } from '~/components/shared/new-issue-dialog';
 import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuTrigger,
+} from '~/components/ui/context-menu';
+
+import {
   CheckCircle,
   Clock,
   Filter,
@@ -13,12 +20,14 @@ import {
   AlertCircle,
   Plus,
 } from 'lucide-react';
+
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
+
 import {
   Select,
   SelectContent,
@@ -26,6 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '~/components/ui/select';
+
 import {
   Table,
   TableBody,
@@ -34,6 +44,7 @@ import {
   TableHeader,
   TableRow,
 } from '~/components/ui/table';
+import PaginationTable from '../ui/pagination-table';
 
 // Sample data
 const projects = [
@@ -234,8 +245,8 @@ export function DashboardContent() {
                   <TableHead>Issue</TableHead>
                   <TableHead>Date Assigned</TableHead>
                   <TableHead>Assigned To</TableHead>
-                  <TableHead>Status</TableHead>
                   <TableHead>Priority</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead className='text-right'>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -250,18 +261,31 @@ export function DashboardContent() {
                     <TableCell>
                       <Badge
                         variant='outline'
-                        className={getStatusColor(issue.status)}
-                      >
-                        {issue.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant='outline'
                         className={getPriorityColor(issue.priority)}
                       >
                         {issue.priority}
                       </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <ContextMenu>
+                        <ContextMenuTrigger>
+                          <Badge
+                            variant='outline'
+                            className={
+                              getStatusColor(issue.status) +
+                              'w-[100px] cursor-pointer rounded-4xl flex justify-center items-center'
+                            }
+                          >
+                            {issue.status}
+                          </Badge>
+                        </ContextMenuTrigger>
+                        <ContextMenuContent>
+                          <ContextMenuItem>Open</ContextMenuItem>
+                          <ContextMenuItem>In Progress</ContextMenuItem>
+                          <ContextMenuItem>Resolved</ContextMenuItem>
+                          <ContextMenuItem>Pending</ContextMenuItem>
+                        </ContextMenuContent>
+                      </ContextMenu>
                     </TableCell>
                     <TableCell className='text-right'>
                       <DropdownMenu>
@@ -274,7 +298,6 @@ export function DashboardContent() {
                         <DropdownMenuContent align='end'>
                           <DropdownMenuItem>View Details</DropdownMenuItem>
                           <DropdownMenuItem>Edit Issue</DropdownMenuItem>
-                          <DropdownMenuItem>Change Status</DropdownMenuItem>
                           <DropdownMenuItem>Reassign</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
@@ -283,6 +306,7 @@ export function DashboardContent() {
                 ))}
               </TableBody>
             </Table>
+            <PaginationTable />
           </CardContent>
         </Card>
       </div>

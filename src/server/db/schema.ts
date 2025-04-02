@@ -1,6 +1,3 @@
-// Example model schema from the Drizzle docs
-// https://orm.drizzle.team/docs/sql-schema-declaration
-
 import { sql } from 'drizzle-orm';
 import {
   index,
@@ -9,15 +6,30 @@ import {
   text,
   timestamp,
   boolean,
+  pgEnum,
+  serial,
+  integer,
 } from 'drizzle-orm/pg-core';
 
-/**
- * This is an example of how to use the multi-project schema feature of Drizzle ORM. Use the same
- * database instance for multiple projects.
- *
- * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
- */
 export const createTable = pgTableCreator((name) => `devtrack_${name}`);
+
+// --- ENUMS ---
+export const projectStatusEnum = pgEnum('project_status', [
+  'planning',
+  'in_progress',
+  'completed',
+  'pending',
+]);
+export const issuePriorityEnum = pgEnum('issue_priority', [
+  'low',
+  'medium',
+  'high',
+]);
+export const issueStatusEnum = pgEnum('issue_status', [
+  'open',
+  'in_progress',
+  'closed',
+]);
 
 export const posts = createTable(
   'post',
@@ -87,3 +99,50 @@ export const verification = pgTable('verification', {
   createdAt: timestamp('created_at'),
   updatedAt: timestamp('updated_at'),
 });
+
+export const projects = pgTable(
+  'project',
+  {
+    id: serial('id').primaryKey(),
+    name: text('name').notNull(),
+    description: text('description'),
+    status: projectStatusEnum('status').default('planning').notNull(),
+    progress: integer('progress').default(0), // 0-100 percentage
+    dueDate: timestamp('due_date'),
+    createdAt: timestamp('created_at')
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp('updated_at')
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => [index('project_name_idx').on(t.name)],
+);
+
+export const issues = pgTable(
+  'issue',
+  {
+    id: serial('id').primaryKey(),
+    name: text('name').notNull(),
+    projectId: integer('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    assignedTo: text('assigned_to').references(() => user.id, {
+      onDelete: 'set null',
+    }),
+    priority: issuePriorityEnum('priority').default('medium').notNull(),
+    status: issueStatusEnum('status').default('open').notNull(),
+    createdAt: timestamp('created_at')
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp('updated_at')
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => [
+    index('issue_name_idx').on(t.name),
+    index('issue_project_idx').on(t.projectId),
+  ],
+);

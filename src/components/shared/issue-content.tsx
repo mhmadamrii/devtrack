@@ -135,7 +135,7 @@ export function IssuesContent() {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'Critical':
-        return 'bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-950/50';
+        return 'bg-red-100 animate-pulse text-red-800 dark:bg-red-950/50 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-950/50';
       case 'High':
         return 'bg-orange-100 text-orange-800 dark:bg-orange-950/50 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-950/50';
       case 'Medium':
@@ -258,8 +258,8 @@ export function IssuesContent() {
                   <TableHead>Issue</TableHead>
                   <TableHead>Date Assigned</TableHead>
                   <TableHead>Assigned To</TableHead>
-                  <TableHead>Status</TableHead>
                   <TableHead>Priority</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead className='text-right'>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -272,21 +272,22 @@ export function IssuesContent() {
                     </TableCell>
                     <TableCell>{issue.assignedTo}</TableCell>
                     <TableCell>
-                      <div
-                        className={
-                          getStatusColor(issue.status) +
-                          'rounded-4xl flex justify-center items-center'
-                        }
-                      >
-                        {issue.status}
-                      </div>
-                    </TableCell>
-                    <TableCell>
                       <Badge
                         variant='outline'
                         className={getPriorityColor(issue.priority)}
                       >
                         {issue.priority}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant='outline'
+                        className={
+                          getStatusColor(issue.status) +
+                          'rounded-4xl flex w-full justify-center items-center'
+                        }
+                      >
+                        {issue.status}
                       </Badge>
                     </TableCell>
                     <TableCell className='text-right'>
