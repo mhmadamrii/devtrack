@@ -12,13 +12,13 @@ import { Separator } from '~/components/ui/separator';
 import { cn } from '~/lib/utils';
 import { ThemeToggle } from '../ui/theme-toggle';
 import { usePathname } from 'next/navigation';
+import { authClient } from '~/server/auth/client';
 
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '~/components/ui/popover';
-import { authClient } from '~/server/auth/client';
 
 const NAV_LINKS = [
   {
