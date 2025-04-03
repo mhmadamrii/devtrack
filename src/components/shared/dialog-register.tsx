@@ -1,8 +1,8 @@
 import { useState, type ChangeEvent } from 'react';
-import { useRouter } from 'next/navigation';
 import { Input } from '~/components/ui/input';
 import { Separator } from '../ui/separator';
 import { EyeIcon, EyeOffIcon, LockIcon, MailIcon } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { Button } from '~/components/ui/button';
 import { toast } from 'sonner';
 import { authClient } from '~/server/auth/client';
@@ -22,8 +22,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from '~/components/ui/dialog';
+import { PinWheelLoader } from '../ui/pinwheel';
 
-export function DialogLogin({
+export function DialogRegister({
   open,
   onOpenChange,
 }: {
@@ -50,16 +51,18 @@ export function DialogLogin({
     }));
   };
 
-  const handleLogin = async () => {
+  const handleRegister = async () => {
     setIsLoading(true);
-    await authClient.signIn.email(
+    await authClient.signUp.email(
       {
         email: credentials.email,
         password: credentials.password,
+        name: 'John Doe',
       },
       {
         onSuccess: (res) => {
-          router.push('/');
+          //   router.push('/');
+          console.log('response', res);
         },
         onError: (err) => {
           console.log('error', err);
@@ -79,8 +82,10 @@ export function DialogLogin({
         </DialogHeader>
         <Card className='w-[350px]'>
           <CardHeader>
-            <CardTitle className='text-'>Sign In</CardTitle>
-            <CardDescription>Sign in to your account.</CardDescription>
+            <CardTitle className='text-'>Create an account</CardTitle>
+            <CardDescription>
+              Start your free 30 days trials. Cancel at anytime.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             <div className='grid w-full items-center gap-4'>
@@ -115,8 +120,12 @@ export function DialogLogin({
                   </button>
                 </div>
               </div>
-              <Button onClick={handleLogin} className='cursor-pointer'>
-                Get Started
+              <Button
+                onClick={handleRegister}
+                className='cursor-pointer'
+                disabled={isLoading}
+              >
+                {isLoading ? <PinWheelLoader /> : 'Get Started'}
               </Button>
             </div>
             <div className='relative my-4 flex items-center justify-center overflow-hidden'>

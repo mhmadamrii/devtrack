@@ -144,14 +144,14 @@ export function NewIssueDialog({ children }: NewIssueDialogProps) {
                 control={form.control}
                 name='project'
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className='w-full'>
                     <FormLabel>Project</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className='w-full'>
                           <SelectValue placeholder='Select project' />
                         </SelectTrigger>
                       </FormControl>
@@ -172,14 +172,14 @@ export function NewIssueDialog({ children }: NewIssueDialogProps) {
                 control={form.control}
                 name='assignedTo'
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className='w-full'>
                     <FormLabel>Assigned To</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className='w-full'>
                           <SelectValue placeholder='Select team member' />
                         </SelectTrigger>
                       </FormControl>
@@ -202,14 +202,14 @@ export function NewIssueDialog({ children }: NewIssueDialogProps) {
                 control={form.control}
                 name='priority'
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className='w-full'>
                     <FormLabel>Priority</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className='w-full'>
                           <SelectValue placeholder='Select priority' />
                         </SelectTrigger>
                       </FormControl>

@@ -8,24 +8,41 @@ import { Autoplay, EffectCoverflow } from 'swiper/modules';
 import { ArrowRight, Menu, Rocket, X } from 'lucide-react';
 import { Button } from '~/components/ui/button';
 import { Logo } from './logo';
+import { DialogLogin } from '~/components/shared/dialog-login';
+import { DialogRegister } from '~/components/shared/dialog-register';
+import { authClient } from '~/server/auth/client';
 
 import 'swiper/css';
 import 'swiper/css/autoplay';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import 'swiper/css/effect-coverflow';
-import { DialogLogin } from '~/components/shared/dialog-login';
 
 const menuItems = [
-  { name: 'Features', href: '#' },
-  { name: 'Solution', href: '#' },
-  { name: 'Pricing', href: '#' },
-  { name: 'About', href: '#' },
+  {
+    name: 'Features',
+    href: '#',
+  },
+  {
+    name: 'Solution',
+    href: '#',
+  },
+  {
+    name: 'Pricing',
+    href: '#',
+  },
+  {
+    name: 'About',
+    href: '#',
+  },
 ];
 
 export default function Hi() {
+  const {data: session} = authClient.useSession()
+  console.log('session', session)
   const [menuState, setMenuState] = React.useState(false);
   const [isOpenLogin, setIsOpenLogin] = React.useState(false);
+  const [isOpenRegister, setIsOpenRegister] = React.useState(false);
 
   return (
     <>
@@ -74,6 +91,7 @@ export default function Hi() {
 
                 <div className='flex w-full flex-col space-y-3 sm:flex-row sm:gap-3 sm:space-y-0 md:w-fit lg:border-l lg:pl-6'>
                   <Button
+                    className='cursor-pointer'
                     onClick={() => setIsOpenLogin(true)}
                     asChild
                     variant='outline'
@@ -81,10 +99,13 @@ export default function Hi() {
                   >
                     <span>Login</span>
                   </Button>
-                  <Button asChild size='sm'>
-                    <Link href='#'>
-                      <span>Register</span>
-                    </Link>
+                  <Button
+                    className='cursor-pointer'
+                    onClick={() => setIsOpenRegister(true)}
+                    asChild
+                    size='sm'
+                  >
+                    <span>Register</span>
                   </Button>
                 </div>
               </div>
@@ -179,6 +200,7 @@ export default function Hi() {
         </section>
       </main>
       <DialogLogin open={isOpenLogin} onOpenChange={setIsOpenLogin} />
+      <DialogRegister open={isOpenRegister} onOpenChange={setIsOpenRegister} />
     </>
   );
 }

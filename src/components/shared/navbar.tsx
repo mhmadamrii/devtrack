@@ -11,8 +11,9 @@ import { Sheet, SheetContent, SheetTrigger } from '~/components/ui/sheet';
 import { Separator } from '~/components/ui/separator';
 import { cn } from '~/lib/utils';
 import { ThemeToggle } from '../ui/theme-toggle';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { authClient } from '~/server/auth/client';
+import { toast } from 'sonner';
 
 import {
   Popover,
@@ -40,10 +41,11 @@ const NAV_LINKS = [
 ] as const;
 
 export function Navbar() {
-  const { data: session } = authClient.useSession();
-  console.log('session', session);
-  const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+
+  const { data: session } = authClient.useSession();
+  const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -75,18 +77,15 @@ export function Navbar() {
             </SheetTrigger>
             <SheetContent side='left' className='w-[240px] sm:w-[300px]'>
               <nav className='flex flex-col gap-4 mt-6'>
-                <Link href='/' className='text-lg font-semibold'>
-                  Dashboard
-                </Link>
-                <Link href='/issues' className='text-lg font-semibold'>
-                  Issues
-                </Link>
-                <Link href='/projects' className='text-lg font-semibold'>
-                  Projects
-                </Link>
-                <Link href='/members' className='text-lg font-semibold'>
-                  Members
-                </Link>
+                {NAV_LINKS.map((item, idx) => (
+                  <Link
+                    key={idx}
+                    href={item.link}
+                    className='text-lg font-semibold'
+                  >
+                    {item.name}
+                  </Link>
+                ))}
               </nav>
             </SheetContent>
           </Sheet>
@@ -129,7 +128,7 @@ export function Navbar() {
               <Button
                 variant='ghost'
                 size='icon'
-                className='rounded-full h-8 w-8 border'
+                className='rounded-full h-8 w-8 border cursor-pointer'
               >
                 <Avatar className='h-8 w-8'>
                   <AvatarImage src='/placeholder-user.jpg' alt='User' />
@@ -138,7 +137,7 @@ export function Navbar() {
               </Button>
             </PopoverTrigger>
             <PopoverContent className='w-80' align='end'>
-              <div className='flex items-center gap-4 pb-4'>
+              <div className='flex items-center cursor-pointer gap-4 pb-4'>
                 <Avatar className='h-12 w-12'>
                   <AvatarImage src='/placeholder-user.jpg' alt='User' />
                   <AvatarFallback>JD</AvatarFallback>
@@ -180,7 +179,17 @@ export function Navbar() {
               <Button
                 variant='ghost'
                 size='sm'
-                className='w-full justify-start gap-2 text-red-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20'
+                className='w-full cursor-pointer justify-start gap-2 text-red-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20'
+                onClick={async () =>
+                  await authClient.signOut({
+                    fetchOptions: {
+                      onSuccess: () => {
+                        toast.success('Successfully logged out');
+                        router.push('/hi');
+                      },
+                    },
+                  })
+                }
               >
                 <LogOut className='h-4 w-4' />
                 Log out
