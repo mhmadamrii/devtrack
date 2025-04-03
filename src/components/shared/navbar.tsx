@@ -131,7 +131,7 @@ export function Navbar() {
                 className='rounded-full h-8 w-8 border cursor-pointer'
               >
                 <Avatar className='h-8 w-8'>
-                  <AvatarImage src='/placeholder-user.jpg' alt='User' />
+                  <AvatarImage src='https://github.com/shadcn.png' alt='User' />
                   <AvatarFallback>JD</AvatarFallback>
                 </Avatar>
               </Button>
