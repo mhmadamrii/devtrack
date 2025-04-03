@@ -30,20 +30,18 @@ export const issueStatusEnum = pgEnum('issue_status', [
   'in_progress',
   'closed',
 ]);
-
-export const posts = createTable(
-  'post',
-  (d) => ({
-    id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
-    name: d.varchar({ length: 256 }),
-    createdAt: d
-      .timestamp({ withTimezone: true })
-      .default(sql`CURRENT_TIMESTAMP`)
-      .notNull(),
-    updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
-  }),
-  (t) => [index('name_idx').on(t.name)],
-);
+export const teamRolesEnum = pgEnum('team_role', [
+  'Developer',
+  'Designer',
+  'QA Engineer',
+  'Project Manager',
+  'Frontend Developer',
+  'Backend Developer',
+  'Fullstack Developer',
+  'Mobile Developer',
+  'DevOps Engineer',
+  'Other',
+]);
 
 export const user = pgTable('user', {
   id: text('id').primaryKey(),
@@ -145,4 +143,22 @@ export const issues = pgTable(
     index('issue_name_idx').on(t.name),
     index('issue_project_idx').on(t.projectId),
   ],
+);
+
+export const teams = pgTable(
+  'team',
+  (d) => ({
+    id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
+    name: d.varchar({ length: 256 }),
+    email: d.varchar({ length: 256 }),
+    phone: d.varchar({ length: 256 }),
+    role: teamRolesEnum('role').default('Developer').notNull(),
+    department: d.varchar({ length: 256 }),
+    createdAt: d
+      .timestamp({ withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
+  }),
+  (t) => [index('team_name_idx').on(t.name)],
 );

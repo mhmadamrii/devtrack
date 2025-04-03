@@ -6,7 +6,6 @@ import { authClient } from '~/server/auth/client';
 
 export default function Auth() {
   const { data: session } = authClient.useSession();
-  console.log('client session', session);
 
   const [isLogin, setIsLogin] = useState(false);
   const [credentials, setCredentials] = useState({

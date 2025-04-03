@@ -1,7 +1,9 @@
 'use client';
 
 import * as z from 'zod';
+
 import { PinWheelLoader } from '../ui/pinwheel';
+import { Label } from '../ui/label';
 import { Calendar } from '~/components/ui/calendar';
 import { cn } from '~/lib/utils';
 import { useForm } from 'react-hook-form';
@@ -10,12 +12,15 @@ import { Checkbox } from '~/components/ui/checkbox';
 import { Avatar, AvatarFallback } from '~/components/ui/avatar';
 import { Input } from '~/components/ui/input';
 import { Textarea } from '~/components/ui/textarea';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from '~/components/ui/button';
 import { Card, CardContent } from '~/components/ui/card';
+import { SliderWithHoverLabel } from '../ui/slider-with-hover-label';
+import { api } from '~/trpc/react';
+import { toast } from 'sonner';
 
 import {
   Form,
@@ -43,19 +48,55 @@ import {
 
 // Sample data
 const members = [
-  { id: '1', name: 'John Doe', role: 'Developer' },
-  { id: '2', name: 'Jane Smith', role: 'Designer' },
-  { id: '3', name: 'Mike Johnson', role: 'Project Manager' },
-  { id: '4', name: 'Sarah Williams', role: 'QA Engineer' },
-  { id: '5', name: 'David Brown', role: 'DevOps Engineer' },
-  { id: '6', name: 'Emily Davis', role: 'Backend Developer' },
+  {
+    id: '1',
+    name: 'John Doe',
+    role: 'Developer',
+  },
+  {
+    id: '2',
+    name: 'Jane Smith',
+    role: 'Designer',
+  },
+  {
+    id: '3',
+    name: 'Mike Johnson',
+    role: 'Project Manager',
+  },
+  {
+    id: '4',
+    name: 'Sarah Williams',
+    role: 'QA Engineer',
+  },
+  {
+    id: '5',
+    name: 'David Brown',
+    role: 'DevOps Engineer',
+  },
+  {
+    id: '6',
+    name: 'Emily Davis',
+    role: 'Backend Developer',
+  },
 ];
 
 const statuses = [
-  { value: 'Planning', label: 'Planning' },
-  { value: 'In Progress', label: 'In Progress' },
-  { value: 'On Hold', label: 'On Hold' },
-  { value: 'Completed', label: 'Completed' },
+  {
+    value: 'planning',
+    label: 'Planning',
+  },
+  {
+    value: 'in_progress',
+    label: 'In Progress',
+  },
+  {
+    value: 'on_hold',
+    label: 'On Hold',
+  },
+  {
+    value: 'completed',
+    label: 'Completed',
+  },
 ];
 
 const formSchema = z
@@ -84,7 +125,22 @@ type FormValues = z.infer<typeof formSchema>;
 
 export function NewProjectForm() {
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [progress, setProgress] = useState([10]);
+  const memoizedProgress = useMemo(() => progress, [progress]);
+
+  const { mutate: createProject, isPending: isSubmitting } =
+    api.project.create.useMutation({
+      onSuccess: async () => {
+        toast.success('Successfully created project 🚀');
+        router.push('/projects');
+        await new Promise((res) => setTimeout(res, 2000))
+        toast.success('Good luck! 💪');
+      },
+      onError: (error) => {
+        console.error('Error creating project:', error);
+        toast.error('Failed to create project');
+      },
+    });
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -97,17 +153,19 @@ export function NewProjectForm() {
   });
 
   function onSubmit(data: FormValues) {
-    setIsSubmitting(true);
-
-    // In a real app, you would send this data to your API
     console.log('Form submitted:', data);
-
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
-      // Navigate back to projects page
-      router.push('/projects');
-    }, 1000);
+    console.log('progress:', progress);
+    createProject({
+      name: data.name,
+      description: data.description,
+      status: data.status as
+        | 'planning'
+        | 'in_progress'
+        | 'completed'
+        | 'pending',
+      progress: progress[0],
+      dueDate: data.endDate,
+    });
   }
 
   return (
@@ -122,7 +180,11 @@ export function NewProjectForm() {
                 <FormItem>
                   <FormLabel>Project Name *</FormLabel>
                   <FormControl>
-                    <Input placeholder='Enter project name' {...field} />
+                    <Input
+                      disabled={isSubmitting}
+                      placeholder='Enter project name'
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -137,6 +199,7 @@ export function NewProjectForm() {
                   <FormLabel>Description *</FormLabel>
                   <FormControl>
                     <Textarea
+                      disabled={isSubmitting}
                       placeholder='Describe the project and its goals'
                       className='min-h-[120px]'
                       {...field}
@@ -162,6 +225,7 @@ export function NewProjectForm() {
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
+                            disabled={isSubmitting}
                             variant={'outline'}
                             className={cn(
                               'w-full pl-3 text-left font-normal',
@@ -201,6 +265,7 @@ export function NewProjectForm() {
                       <PopoverTrigger asChild>
                         <FormControl>
                           <Button
+                            disabled={isSubmitting}
                             variant={'outline'}
                             className={cn(
                               'w-full pl-3 text-left font-normal',
@@ -238,11 +303,12 @@ export function NewProjectForm() {
                 <FormItem>
                   <FormLabel>Status *</FormLabel>
                   <Select
+                    disabled={isSubmitting}
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className='w-full'>
                         <SelectValue placeholder='Select status' />
                       </SelectTrigger>
                     </FormControl>
@@ -258,6 +324,14 @@ export function NewProjectForm() {
                 </FormItem>
               )}
             />
+
+            <div className='w-full flex-col flex items-start gap-2 justify-start'>
+              <Label>Progress*</Label>
+              <SliderWithHoverLabel
+                currentProgress={memoizedProgress}
+                onProgressChange={setProgress}
+              />
+            </div>
 
             <FormField
               control={form.control}
@@ -284,6 +358,7 @@ export function NewProjectForm() {
                             >
                               <FormControl>
                                 <Checkbox
+                                  disabled={isSubmitting}
                                   checked={field.value?.includes(member.id)}
                                   onCheckedChange={(checked) => {
                                     return checked

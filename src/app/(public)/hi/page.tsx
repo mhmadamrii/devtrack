@@ -39,7 +39,6 @@ const menuItems = [
 
 export default function Hi() {
   const { data: session } = authClient.useSession();
-  console.log('session', session);
   const [menuState, setMenuState] = React.useState(false);
   const [isOpenLogin, setIsOpenLogin] = React.useState(false);
   const [isOpenRegister, setIsOpenRegister] = React.useState(false);
