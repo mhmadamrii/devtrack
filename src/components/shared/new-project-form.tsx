@@ -133,7 +133,7 @@ export function NewProjectForm() {
       onSuccess: async () => {
         toast.success('Successfully created project 🚀');
         router.push('/projects');
-        await new Promise((res) => setTimeout(res, 2000))
+        await new Promise((res) => setTimeout(res, 2000));
         toast.success('Good luck! 💪');
       },
       onError: (error) => {

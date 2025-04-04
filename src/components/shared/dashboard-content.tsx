@@ -267,7 +267,10 @@ export function DashboardContent() {
                     </TableCell>
                     <TableCell>{issue.assignedTo}</TableCell>
                     <TableCell>
-                      <Link className='underline text-blue-500' href={`/users/${issue.assignedBy}`}>
+                      <Link
+                        className='underline text-blue-500'
+                        href={`/users/${issue.assignedBy}`}
+                      >
                         {issue.assignedBy}
                       </Link>
                     </TableCell>

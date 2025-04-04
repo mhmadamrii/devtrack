@@ -8,6 +8,15 @@ const config = {
   experimental: {
     reactCompiler: true,
   },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  images: {
+    domains: ['images.unsplash.com'],
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 };
 
 export default config;

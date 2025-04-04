@@ -79,9 +79,13 @@ async function ProjectCards() {
             <span>Progress</span>
             <span className='font-medium'>{project.progress}%</span>
           </div>
-          <Progress
+          {/* <Progress
             value={project.progress}
             className={getProgressColor(project.progress as number)}
+          /> */}
+          <Progress
+            value={project.progress}
+            className='w-full [&>div]:bg-gradient-to-r [&>div]:from-cyan-400 [&>div]:via-sky-500 [&>div]:to-indigo-500 [&>div]:rounded-l-full'
           />
           <div className='flex justify-between text-sm'>
             <div className='flex items-center gap-1'>

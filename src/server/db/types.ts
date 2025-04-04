@@ -1,3 +1,2 @@
-import { InferSelectModel } from "drizzle-orm";
-import { projects } from "./schema";
-
+import { InferSelectModel } from 'drizzle-orm';
+import { projects } from './schema';

@@ -7,12 +7,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
 import { Input } from '~/components/ui/input';
+
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
+
 import {
   Select,
   SelectContent,
@@ -20,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '~/components/ui/select';
+
 import {
   Table,
   TableBody,
@@ -178,7 +181,7 @@ export function IssuesContent() {
         <div className='flex items-center justify-between'>
           <h1 className='text-3xl font-bold'>Issues</h1>
           <NewIssueDialog>
-            <Button>
+            <Button className='cursor-pointer'>
               <Plus className='mr-2 h-4 w-4' />
               New Issue
             </Button>

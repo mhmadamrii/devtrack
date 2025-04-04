@@ -111,7 +111,9 @@ const formSchema = z
       .max(500),
     startDate: z.date({ required_error: 'Start date is required' }),
     endDate: z.date({ required_error: 'End date is required' }),
-    status: z.string({ required_error: 'Please select a status' }),
+    status: z
+      .string({ required_error: 'Please select a status' })
+      .min(1, { message: 'Status must be filled' }),
     teamMembers: z
       .array(z.string())
       .min(1, { message: 'Select at least one team member' }),
@@ -145,17 +147,15 @@ export function EditProjectForm({
   const [progress, setProgress] = useState([10]);
   const memoizedProgress = useMemo(() => progress, [progress]);
 
-  const { mutate: createProject, isPending: isSubmitting } =
-    api.project.create.useMutation({
+  const { mutate: editProject, isPending: isSubmitting } =
+    api.project.editProject.useMutation({
       onSuccess: async () => {
-        toast.success('Successfully created project 🚀');
+        toast.success('Successfully edit project 🚀');
         router.push('/projects');
-        await new Promise((res) => setTimeout(res, 2000));
-        toast.success('Good luck! 💪');
       },
       onError: (error) => {
-        console.error('Error creating project:', error);
-        toast.error('Failed to create project');
+        console.error('Error editing project:', error);
+        toast.error('Failed to edit project');
       },
     });
 
@@ -170,9 +170,10 @@ export function EditProjectForm({
   });
 
   function onSubmit(data: FormValues) {
-    console.log('Form submitted:', data);
-    console.log('progress:', progress);
-    createProject({
+    console.log('initial project', initialProject);
+    console.log('data', data);
+    editProject({
+      projectId: initialProject?.id as number,
       name: data.name,
       description: data.description,
       status: data.status as
@@ -189,9 +190,11 @@ export function EditProjectForm({
     if (initialProject) {
       form.setValue('name', initialProject.name);
       form.setValue('description', initialProject.description ?? '');
-      form.setValue('status', initialProject.status);
+      form.setValue('status', initialProject.status.toString());
+      setProgress([initialProject.progress ?? 0]);
     }
   }, [initialProject]);
+  console.log(form.getValues('status'));
 
   return (
     <Card className='border-border'>
@@ -330,7 +333,8 @@ export function EditProjectForm({
                   <Select
                     disabled={isSubmitting}
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    value={field.value.toString()}
+                    defaultValue={field.value.toString()}
                   >
                     <FormControl>
                       <SelectTrigger className='w-full'>
@@ -339,7 +343,10 @@ export function EditProjectForm({
                     </FormControl>
                     <SelectContent>
                       {statuses.map((status) => (
-                        <SelectItem key={status.value} value={status.value}>
+                        <SelectItem
+                          key={status.value}
+                          value={status.value.toString()}
+                        >
                           {status.label}
                         </SelectItem>
                       ))}
@@ -442,7 +449,7 @@ export function EditProjectForm({
                 type='submit'
                 disabled={isSubmitting}
               >
-                {isSubmitting ? <PinWheelLoader /> : 'Create Project'}
+                {isSubmitting ? <PinWheelLoader /> : 'Edit Project'}
               </Button>
             </div>
           </form>
