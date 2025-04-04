@@ -57,7 +57,9 @@ async function ProjectCards() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align='end'>
-              <DropdownMenuItem>View Details</DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link href={`/projects/${project.id}`}>View Details</Link>
+              </DropdownMenuItem>
               <DropdownMenuItem>
                 <Link href={`/projects/edit/${project.id}`}>Edit Project</Link>
               </DropdownMenuItem>

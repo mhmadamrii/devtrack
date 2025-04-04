@@ -2,6 +2,7 @@ import { useState, type ChangeEvent } from 'react';
 import { useRouter } from 'nextjs-toploader/app';
 import { Input } from '~/components/ui/input';
 import { Separator } from '../ui/separator';
+import { PinWheelLoader } from '../ui/pinwheel';
 import { EyeIcon, EyeOffIcon, LockIcon, MailIcon } from 'lucide-react';
 import { Button } from '~/components/ui/button';
 import { toast } from 'sonner';
@@ -107,7 +108,10 @@ export function DialogLogin({
                     name='password'
                     disabled={isLoading}
                   />
-                  <button onClick={togglePasswordVisibility}>
+                  <button
+                    disabled={isLoading}
+                    onClick={togglePasswordVisibility}
+                  >
                     {showPassword ? (
                       <EyeOffIcon className='h-5 w-5 text-muted-foreground' />
                     ) : (
@@ -117,6 +121,7 @@ export function DialogLogin({
                 </div>
               </div>
               <Button onClick={handleLogin} className='cursor-pointer'>
+                {isLoading && <PinWheelLoader />}
                 Get Started
               </Button>
             </div>

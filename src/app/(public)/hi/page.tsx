@@ -7,7 +7,7 @@ import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, EffectCoverflow } from 'swiper/modules';
 import { ArrowRight, Menu, Rocket, X } from 'lucide-react';
 import { Button } from '~/components/ui/button';
-import { Logo } from './logo';
+import { Logo } from '~/components/shared/logo';
 import { DialogLogin } from '~/components/shared/dialog-login';
 import { DialogRegister } from '~/components/shared/dialog-register';
 import { authClient } from '~/server/auth/client';
@@ -29,7 +29,7 @@ const menuItems = [
   },
   {
     name: 'Pricing',
-    href: '#',
+    href: '/pricing',
   },
   {
     name: 'About',
