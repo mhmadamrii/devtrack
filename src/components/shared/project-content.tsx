@@ -1,8 +1,9 @@
-'use client';
+import Link from 'next/link';
 
+import { Suspense } from 'react';
 import { Calendar, MoreHorizontal, Plus, Search, Users } from 'lucide-react';
+import { api } from '~/trpc/server';
 import { Button } from '~/components/ui/button';
-import { useRouter } from 'next/navigation';
 import { Badge } from '~/components/ui/badge';
 import { Input } from '~/components/ui/input';
 import { Progress } from '~/components/ui/progress';
@@ -22,78 +23,8 @@ import {
   DropdownMenuTrigger,
 } from '~/components/ui/dropdown-menu';
 
-// Sample data
-const projects = [
-  {
-    id: '1',
-    name: 'Website Redesign',
-    description: 'Redesign the company website with modern UI/UX',
-    startDate: '2023-03-15',
-    endDate: '2023-06-30',
-    progress: 65,
-    members: 4,
-    issues: 8,
-    status: 'In Progress',
-  },
-  {
-    id: '2',
-    name: 'Mobile App Development',
-    description: 'Develop a cross-platform mobile application',
-    startDate: '2023-02-01',
-    endDate: '2023-08-15',
-    progress: 40,
-    members: 6,
-    issues: 12,
-    status: 'In Progress',
-  },
-  {
-    id: '3',
-    name: 'API Integration',
-    description: 'Integrate third-party APIs into the platform',
-    startDate: '2023-04-10',
-    endDate: '2023-05-20',
-    progress: 85,
-    members: 3,
-    issues: 5,
-    status: 'In Progress',
-  },
-  {
-    id: '4',
-    name: 'Database Migration',
-    description: 'Migrate from SQL to NoSQL database',
-    startDate: '2023-05-01',
-    endDate: '2023-07-15',
-    progress: 20,
-    members: 4,
-    issues: 7,
-    status: 'Planning',
-  },
-  {
-    id: '5',
-    name: 'Security Audit',
-    description: 'Perform security audit and implement fixes',
-    startDate: '2023-03-01',
-    endDate: '2023-04-15',
-    progress: 100,
-    members: 2,
-    issues: 3,
-    status: 'Completed',
-  },
-  {
-    id: '6',
-    name: 'User Authentication System',
-    description: 'Implement OAuth and two-factor authentication',
-    startDate: '2023-04-15',
-    endDate: '2023-06-01',
-    progress: 50,
-    members: 3,
-    issues: 6,
-    status: 'In Progress',
-  },
-];
-
-export function ProjectsContent() {
-  const router = useRouter();
+async function ProjectCards() {
+  const projects = await api.project.getAllProjects();
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Planning':
@@ -113,17 +44,80 @@ export function ProjectsContent() {
     return 'bg-green-500';
   };
 
+  return projects.map((project) => (
+    <Card key={project.id} className='overflow-hidden border-border'>
+      <CardHeader className='pb-2'>
+        <div className='flex justify-between items-start'>
+          <CardTitle className='text-lg'>{project.name}</CardTitle>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant='ghost' size='icon'>
+                <MoreHorizontal className='h-4 w-4' />
+                <span className='sr-only'>Actions</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align='end'>
+              <DropdownMenuItem>View Details</DropdownMenuItem>
+              <DropdownMenuItem>
+                <Link href={`/projects/edit/${project.id}`}>Edit Project</Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem>Manage Team</DropdownMenuItem>
+              <DropdownMenuItem>View Issues</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        <Badge variant='outline' className={getStatusColor(project.status)}>
+          {project.status}
+        </Badge>
+      </CardHeader>
+      <CardContent>
+        <p className='text-sm text-muted-foreground min-h-[40px] mb-4'>
+          {project.description}
+        </p>
+        <div className='space-y-4'>
+          <div className='flex justify-between items-center text-sm'>
+            <span>Progress</span>
+            <span className='font-medium'>{project.progress}%</span>
+          </div>
+          <Progress
+            value={project.progress}
+            className={getProgressColor(project.progress as number)}
+          />
+          <div className='flex justify-between text-sm'>
+            <div className='flex items-center gap-1'>
+              <Calendar className='h-4 w-4 text-muted-foreground' />
+              <span>
+                {new Date(project.createdAt).toLocaleDateString()} -{' '}
+                {new Date(project.createdAt).toLocaleDateString()}
+              </span>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+      <CardFooter className='border-t pt-4 flex justify-between'>
+        <div className='flex items-center gap-1'>
+          <Users className='h-4 w-4 text-muted-foreground' />
+          <span className='text-sm'>1 members</span>
+        </div>
+        <div className='text-sm'>
+          <span>12 issues</span>
+        </div>
+      </CardFooter>
+    </Card>
+  ));
+}
+
+export function ProjectsContent() {
   return (
     <main className='flex-1 p-4 md:p-6 lg:p-8'>
       <div className='flex flex-col gap-6'>
         <div className='flex items-center justify-between'>
           <h1 className='text-3xl font-bold'>Projects</h1>
-          <Button
-            className='cursor-pointer'
-            onClick={() => router.push('/projects/new')}
-          >
-            <Plus className='mr-2 h-4 w-4' />
-            New Project
+          <Button asChild>
+            <Link className='cursor-pointer' href='/projects/new'>
+              <Plus className='mr-2 h-4 w-4' />
+              New Project
+            </Link>
           </Button>
         </div>
 
@@ -139,68 +133,9 @@ export function ProjectsContent() {
         </div>
 
         <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
-          {projects.map((project) => (
-            <Card key={project.id} className='overflow-hidden border-border'>
-              <CardHeader className='pb-2'>
-                <div className='flex justify-between items-start'>
-                  <CardTitle className='text-lg'>{project.name}</CardTitle>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant='ghost' size='icon'>
-                        <MoreHorizontal className='h-4 w-4' />
-                        <span className='sr-only'>Actions</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align='end'>
-                      <DropdownMenuItem>View Details</DropdownMenuItem>
-                      <DropdownMenuItem>Edit Project</DropdownMenuItem>
-                      <DropdownMenuItem>Manage Team</DropdownMenuItem>
-                      <DropdownMenuItem>View Issues</DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-                <Badge
-                  variant='outline'
-                  className={getStatusColor(project.status)}
-                >
-                  {project.status}
-                </Badge>
-              </CardHeader>
-              <CardContent>
-                <p className='text-sm text-muted-foreground mb-4'>
-                  {project.description}
-                </p>
-                <div className='space-y-4'>
-                  <div className='flex justify-between items-center text-sm'>
-                    <span>Progress</span>
-                    <span className='font-medium'>{project.progress}%</span>
-                  </div>
-                  <Progress
-                    value={project.progress}
-                    className={getProgressColor(project.progress)}
-                  />
-                  <div className='flex justify-between text-sm'>
-                    <div className='flex items-center gap-1'>
-                      <Calendar className='h-4 w-4 text-muted-foreground' />
-                      <span>
-                        {new Date(project.startDate).toLocaleDateString()} -{' '}
-                        {new Date(project.endDate).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-              <CardFooter className='border-t pt-4 flex justify-between'>
-                <div className='flex items-center gap-1'>
-                  <Users className='h-4 w-4 text-muted-foreground' />
-                  <span className='text-sm'>{project.members} members</span>
-                </div>
-                <div className='text-sm'>
-                  <span>{project.issues} issues</span>
-                </div>
-              </CardFooter>
-            </Card>
-          ))}
+          <Suspense fallback={<div>Loading...</div>}>
+            <ProjectCards />
+          </Suspense>
         </div>
       </div>
     </main>

@@ -31,10 +31,22 @@ import {
 
 // Sample data
 const projects = [
-  { id: '1', name: 'Website Redesign' },
-  { id: '2', name: 'Mobile App Development' },
-  { id: '3', name: 'API Integration' },
-  { id: '4', name: 'Database Migration' },
+  {
+    id: '1',
+    name: 'Website Redesign',
+  },
+  {
+    id: '2',
+    name: 'Mobile App Development',
+  },
+  {
+    id: '3',
+    name: 'API Integration',
+  },
+  {
+    id: '4',
+    name: 'Database Migration',
+  },
 ];
 
 const issues = [

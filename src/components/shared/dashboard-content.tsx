@@ -1,10 +1,12 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
 import { NewIssueDialog } from '~/components/shared/new-issue-dialog';
+
 import {
   ContextMenu,
   ContextMenuContent,
@@ -72,6 +74,7 @@ const issues = [
     title: 'Login page not responsive',
     dateAssigned: '2023-04-01',
     assignedTo: 'John Doe',
+    assignedBy: 'John',
     status: 'In Progress',
     priority: 'Medium',
     project: '1',
@@ -81,6 +84,7 @@ const issues = [
     title: 'API endpoint returns 500 error',
     dateAssigned: '2023-04-02',
     assignedTo: 'Jane Smith',
+    assignedBy: 'John',
     status: 'Open',
     priority: 'Critical',
     project: '3',
@@ -90,6 +94,7 @@ const issues = [
     title: 'Missing validation on form submission',
     dateAssigned: '2023-04-03',
     assignedTo: 'Mike Johnson',
+    assignedBy: 'John',
     status: 'Resolved',
     priority: 'Low',
     project: '1',
@@ -99,6 +104,7 @@ const issues = [
     title: 'Performance issues on dashboard',
     dateAssigned: '2023-04-04',
     assignedTo: 'Sarah Williams',
+    assignedBy: 'John',
     status: 'In Progress',
     priority: 'High',
     project: '2',
@@ -108,6 +114,7 @@ const issues = [
     title: 'Database connection timeout',
     dateAssigned: '2023-04-05',
     assignedTo: 'John Doe',
+    assignedBy: 'John',
     status: 'Open',
     priority: 'Critical',
     project: '4',
@@ -245,6 +252,7 @@ export function DashboardContent() {
                   <TableHead>Issue</TableHead>
                   <TableHead>Date Assigned</TableHead>
                   <TableHead>Assigned To</TableHead>
+                  <TableHead>Assigned By</TableHead>
                   <TableHead>Priority</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className='text-right'>Actions</TableHead>
@@ -259,9 +267,14 @@ export function DashboardContent() {
                     </TableCell>
                     <TableCell>{issue.assignedTo}</TableCell>
                     <TableCell>
+                      <Link className='underline text-blue-500' href={`/users/${issue.assignedBy}`}>
+                        {issue.assignedBy}
+                      </Link>
+                    </TableCell>
+                    <TableCell>
                       <Badge
                         variant='outline'
-                        className={getPriorityColor(issue.priority)}
+                        className={getPriorityColor(issue.priority) + ''}
                       >
                         {issue.priority}
                       </Badge>
@@ -273,7 +286,7 @@ export function DashboardContent() {
                             variant='outline'
                             className={
                               getStatusColor(issue.status) +
-                              'w-[100px] cursor-pointer rounded-4xl flex justify-center items-center'
+                              'rounded-4xl flex w-full justify-center items-center cursor-pointer'
                             }
                           >
                             {issue.status}

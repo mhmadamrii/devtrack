@@ -1,9 +1,30 @@
 import { z } from 'zod';
-
-import { createTRPCRouter, publicProcedure } from '~/server/api/trpc';
 import { projects } from '~/server/db/schema';
+import { eq } from 'drizzle-orm';
+
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  publicProcedure,
+} from '~/server/api/trpc';
 
 export const projectRouter = createTRPCRouter({
+  getAllProjects: publicProcedure.query(async ({ ctx }) => {
+    return await ctx.db.select().from(projects);
+  }),
+  getProjectById: protectedProcedure
+    .input(
+      z.object({
+        projectId: z.number(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      return await ctx.db
+        .select()
+        .from(projects)
+        .where(eq(projects.id, input.projectId))
+        .limit(1);
+    }),
   create: publicProcedure
     .input(
       z.object({

@@ -1,5 +1,5 @@
 import { useState, type ChangeEvent } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'nextjs-toploader/app';
 import { Input } from '~/components/ui/input';
 import { Separator } from '../ui/separator';
 import { EyeIcon, EyeOffIcon, LockIcon, MailIcon } from 'lucide-react';
@@ -58,7 +58,8 @@ export function DialogLogin({
         password: credentials.password,
       },
       {
-        onSuccess: (res) => {
+        onSuccess: () => {
+          console.log('pushing to dashboard');
           router.push('/');
         },
         onError: (err) => {
