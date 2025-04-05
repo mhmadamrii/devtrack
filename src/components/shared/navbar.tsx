@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 
+import { useRouter } from 'nextjs-toploader/app';
 import { useState, useEffect } from 'react';
 import { Bell, Menu, Search, Settings, User, LogOut } from 'lucide-react';
 import { Button } from '~/components/ui/button';
@@ -11,7 +12,7 @@ import { Sheet, SheetContent, SheetTrigger } from '~/components/ui/sheet';
 import { Separator } from '~/components/ui/separator';
 import { cn } from '~/lib/utils';
 import { ThemeToggle } from '../ui/theme-toggle';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { authClient } from '~/server/auth/client';
 import { toast } from 'sonner';
 
@@ -158,6 +159,7 @@ export function Navbar() {
                   ACCOUNT
                 </div>
                 <Button
+                  onClick={() => router.push('/profile')}
                   variant='ghost'
                   size='sm'
                   className='w-full justify-start gap-2'
@@ -166,6 +168,7 @@ export function Navbar() {
                   Profile
                 </Button>
                 <Button
+                  onClick={() => router.push('/settings')}
                   variant='ghost'
                   size='sm'
                   className='w-full justify-start gap-2'

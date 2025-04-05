@@ -147,7 +147,7 @@ export function NewProjectForm() {
     defaultValues: {
       name: '',
       description: '',
-      status: 'Planning',
+      status: '',
       teamMembers: [],
     },
   });

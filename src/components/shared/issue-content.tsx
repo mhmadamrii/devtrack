@@ -6,6 +6,8 @@ import { api } from '~/trpc/server';
 import { Card, CardContent } from '~/components/ui/card';
 import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
+import { StatusTable } from './status-table';
+import { AssigneeBy } from './assignee-by';
 
 import {
   DropdownMenu,
@@ -23,83 +25,9 @@ import {
   TableRow,
 } from '~/components/ui/table';
 
-const issues = [
-  {
-    id: '1',
-    title: 'Login page not responsive',
-    dateAssigned: '2023-04-01',
-    assignedTo: 'John Doe',
-    status: 'In Progress',
-    priority: 'Medium',
-    project: '1',
-  },
-  {
-    id: '2',
-    title: 'API endpoint returns 500 error',
-    dateAssigned: '2023-04-02',
-    assignedTo: 'Jane Smith',
-    status: 'Open',
-    priority: 'Critical',
-    project: '3',
-  },
-  {
-    id: '3',
-    title: 'Missing validation on form submission',
-    dateAssigned: '2023-04-03',
-    assignedTo: 'Mike Johnson',
-    status: 'Resolved',
-    priority: 'Low',
-    project: '1',
-  },
-  {
-    id: '4',
-    title: 'Performance issues on dashboard',
-    dateAssigned: '2023-04-04',
-    assignedTo: 'Sarah Williams',
-    status: 'In Progress',
-    priority: 'High',
-    project: '2',
-  },
-  {
-    id: '5',
-    title: 'Database connection timeout',
-    dateAssigned: '2023-04-05',
-    assignedTo: 'John Doe',
-    status: 'Open',
-    priority: 'Critical',
-    project: '4',
-  },
-  {
-    id: '6',
-    title: 'User profile image upload fails',
-    dateAssigned: '2023-04-06',
-    assignedTo: 'Jane Smith',
-    status: 'Open',
-    priority: 'Medium',
-    project: '2',
-  },
-  {
-    id: '7',
-    title: 'Payment gateway integration issue',
-    dateAssigned: '2023-04-07',
-    assignedTo: 'Mike Johnson',
-    status: 'In Progress',
-    priority: 'High',
-    project: '1',
-  },
-  {
-    id: '8',
-    title: 'Search functionality not working',
-    dateAssigned: '2023-04-08',
-    assignedTo: 'Sarah Williams',
-    status: 'Resolved',
-    priority: 'Medium',
-    project: '3',
-  },
-];
-
 async function IssuesCard() {
   const issues = await api.issue.getAllIssues();
+  console.log('issues', issues);
 
   const getPriorityColor = (priority: string) => {
     console.log('priority', priority);
@@ -117,19 +45,6 @@ async function IssuesCard() {
     }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'open':
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-950/50 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-950/50';
-      case 'in_progress':
-        return 'bg-purple-100 text-purple-800 dark:bg-purple-950/50 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-950/50';
-      case 'resolved':
-        return 'bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-950/50';
-      default:
-        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800';
-    }
-  };
-
   return (
     <Card className='border-border'>
       <CardContent className='p-0'>
@@ -139,6 +54,7 @@ async function IssuesCard() {
               <TableHead>Issue</TableHead>
               <TableHead>Date Assigned</TableHead>
               <TableHead>Assigned To</TableHead>
+              <TableHead>Project</TableHead>
               <TableHead>Priority</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className='text-right'>Actions</TableHead>
@@ -149,7 +65,10 @@ async function IssuesCard() {
               <TableRow key={issue.id}>
                 <TableCell className='font-medium'>{issue.name}</TableCell>
                 <TableCell>{new Date().toLocaleDateString()}</TableCell>
-                <TableCell>{issue.assignedTo}</TableCell>
+                <TableCell>
+                  <AssigneeBy name={issue.assigneeName ?? ''} />
+                </TableCell>
+                <TableCell>{issue.projectName}</TableCell>
                 <TableCell>
                   <Badge
                     variant='outline'
@@ -159,15 +78,10 @@ async function IssuesCard() {
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <Badge
-                    variant='outline'
-                    className={
-                      getStatusColor(issue.status) +
-                      'rounded-4xl flex w-full justify-center items-center'
-                    }
-                  >
-                    {issue.status}
-                  </Badge>
+                  <StatusTable
+                    issueId={issue.id}
+                    currentStatus={issue.status}
+                  />
                 </TableCell>
                 <TableCell className='text-right'>
                   <DropdownMenu>

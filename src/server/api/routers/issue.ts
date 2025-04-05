@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { issues, projects, teams } from '~/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { eq, desc } from 'drizzle-orm';
 
 import {
   createTRPCRouter,
@@ -10,7 +10,24 @@ import {
 
 export const issueRouter = createTRPCRouter({
   getAllIssues: publicProcedure.query(async ({ ctx }) => {
-    return await ctx.db.select().from(issues);
+    return await ctx.db
+      .select({
+        id: issues.id,
+        name: issues.name,
+        description: issues.description,
+        projectId: issues.projectId,
+        projectName: projects.name,
+        assignedTo: issues.assignedTo,
+        assigneeName: teams.name,
+        priority: issues.priority,
+        status: issues.status,
+        createdAt: issues.createdAt,
+        updatedAt: issues.updatedAt,
+      })
+      .from(issues)
+      .leftJoin(projects, eq(issues.projectId, projects.id))
+      .leftJoin(teams, eq(issues.assignedTo, teams.id))
+      .orderBy(desc(issues.createdAt));
   }),
 
   getIssuesByProject: publicProcedure
@@ -21,9 +38,24 @@ export const issueRouter = createTRPCRouter({
     )
     .query(async ({ ctx, input }) => {
       return await ctx.db
-        .select()
+        .select({
+          id: issues.id,
+          name: issues.name,
+          description: issues.description,
+          projectId: issues.projectId,
+          projectName: projects.name,
+          assignedTo: issues.assignedTo,
+          assigneeName: teams.name,
+          priority: issues.priority,
+          status: issues.status,
+          createdAt: issues.createdAt,
+          updatedAt: issues.updatedAt,
+        })
         .from(issues)
-        .where(eq(issues.projectId, input.projectId));
+        .leftJoin(projects, eq(issues.projectId, projects.id))
+        .leftJoin(teams, eq(issues.assignedTo, teams.id))
+        .where(eq(issues.projectId, input.projectId))
+        .orderBy(desc(issues.createdAt));
     }),
 
   getIssueById: publicProcedure
@@ -33,11 +65,27 @@ export const issueRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      return await ctx.db
-        .select()
+      const result = await ctx.db
+        .select({
+          id: issues.id,
+          name: issues.name,
+          description: issues.description,
+          projectId: issues.projectId,
+          projectName: projects.name,
+          assignedTo: issues.assignedTo,
+          assigneeName: teams.name,
+          priority: issues.priority,
+          status: issues.status,
+          createdAt: issues.createdAt,
+          updatedAt: issues.updatedAt,
+        })
         .from(issues)
+        .leftJoin(projects, eq(issues.projectId, projects.id))
+        .leftJoin(teams, eq(issues.assignedTo, teams.id))
         .where(eq(issues.id, input.issueId))
         .limit(1);
+
+      return result[0];
     }),
 
   create: protectedProcedure
@@ -93,7 +141,32 @@ export const issueRouter = createTRPCRouter({
         })
         .returning({ id: issues.id });
 
-      return result[0];
+      if (!result[0]) {
+        throw new Error('Failed to create issue');
+      }
+
+      // Fetch the complete issue with project and assignee details
+      const createdIssue = await ctx.db
+        .select({
+          id: issues.id,
+          name: issues.name,
+          description: issues.description,
+          projectId: issues.projectId,
+          projectName: projects.name,
+          assignedTo: issues.assignedTo,
+          assigneeName: teams.name,
+          priority: issues.priority,
+          status: issues.status,
+          createdAt: issues.createdAt,
+          updatedAt: issues.updatedAt,
+        })
+        .from(issues)
+        .leftJoin(projects, eq(issues.projectId, projects.id))
+        .leftJoin(teams, eq(issues.assignedTo, teams.id))
+        .where(eq(issues.id, result[0].id))
+        .limit(1);
+
+      return createdIssue[0] || { id: result[0].id };
     }),
 
   updateStatus: protectedProcedure
@@ -111,6 +184,29 @@ export const issueRouter = createTRPCRouter({
           updatedAt: new Date(),
         })
         .where(eq(issues.id, input.issueId));
+
+      // Return the updated issue with project and assignee details
+      const updatedIssue = await ctx.db
+        .select({
+          id: issues.id,
+          name: issues.name,
+          description: issues.description,
+          projectId: issues.projectId,
+          projectName: projects.name,
+          assignedTo: issues.assignedTo,
+          assigneeName: teams.name,
+          priority: issues.priority,
+          status: issues.status,
+          createdAt: issues.createdAt,
+          updatedAt: issues.updatedAt,
+        })
+        .from(issues)
+        .leftJoin(projects, eq(issues.projectId, projects.id))
+        .leftJoin(teams, eq(issues.assignedTo, teams.id))
+        .where(eq(issues.id, input.issueId))
+        .limit(1);
+
+      return updatedIssue[0];
     }),
 
   updatePriority: protectedProcedure
@@ -128,6 +224,29 @@ export const issueRouter = createTRPCRouter({
           updatedAt: new Date(),
         })
         .where(eq(issues.id, input.issueId));
+
+      // Return the updated issue with project and assignee details
+      const updatedIssue = await ctx.db
+        .select({
+          id: issues.id,
+          name: issues.name,
+          description: issues.description,
+          projectId: issues.projectId,
+          projectName: projects.name,
+          assignedTo: issues.assignedTo,
+          assigneeName: teams.name,
+          priority: issues.priority,
+          status: issues.status,
+          createdAt: issues.createdAt,
+          updatedAt: issues.updatedAt,
+        })
+        .from(issues)
+        .leftJoin(projects, eq(issues.projectId, projects.id))
+        .leftJoin(teams, eq(issues.assignedTo, teams.id))
+        .where(eq(issues.id, input.issueId))
+        .limit(1);
+
+      return updatedIssue[0];
     }),
 
   updateAssignee: protectedProcedure
@@ -158,5 +277,28 @@ export const issueRouter = createTRPCRouter({
           updatedAt: new Date(),
         })
         .where(eq(issues.id, input.issueId));
+
+      // Return the updated issue with project and assignee details
+      const updatedIssue = await ctx.db
+        .select({
+          id: issues.id,
+          name: issues.name,
+          description: issues.description,
+          projectId: issues.projectId,
+          projectName: projects.name,
+          assignedTo: issues.assignedTo,
+          assigneeName: teams.name,
+          priority: issues.priority,
+          status: issues.status,
+          createdAt: issues.createdAt,
+          updatedAt: issues.updatedAt,
+        })
+        .from(issues)
+        .leftJoin(projects, eq(issues.projectId, projects.id))
+        .leftJoin(teams, eq(issues.assignedTo, teams.id))
+        .where(eq(issues.id, input.issueId))
+        .limit(1);
+
+      return updatedIssue[0];
     }),
 });
