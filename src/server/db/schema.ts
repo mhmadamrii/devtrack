@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 import {
   index,
   pgTableCreator,
@@ -9,6 +9,8 @@ import {
   pgEnum,
   serial,
   integer,
+  varchar,
+  primaryKey,
 } from 'drizzle-orm/pg-core';
 
 export const createTable = pgTableCreator((name) => `devtrack_${name}`);
@@ -56,6 +58,8 @@ export const user = pgTable('user', {
   banReason: text('ban_reason'),
   banExpires: timestamp('ban_expires'),
 });
+
+// Relations will be defined after all tables
 
 export const session = pgTable('session', {
   id: text('id').primaryKey(),
@@ -106,16 +110,19 @@ export const projects = pgTable(
     description: text('description'),
     status: projectStatusEnum('status').default('planning').notNull(),
     progress: integer('progress').default(0), // 0-100 percentage
-    dueDate: timestamp('due_date'),
-    createdAt: timestamp('created_at')
+    dueDate: timestamp('due_date', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
-    updatedAt: timestamp('updated_at')
+    updatedAt: timestamp('updated_at', { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull()
       .$onUpdate(() => new Date()),
   },
-  (t) => [index('project_name_idx').on(t.name)],
+  (t) => [
+    index('project_name_idx').on(t.name),
+    index('project_status_idx').on(t.status),
+  ],
 );
 
 export const issues = pgTable(
@@ -123,18 +130,19 @@ export const issues = pgTable(
   {
     id: serial('id').primaryKey(),
     name: text('name').notNull(),
+    description: text('description'),
     projectId: integer('project_id')
       .notNull()
       .references(() => projects.id, { onDelete: 'cascade' }),
-    assignedTo: text('assigned_to').references(() => user.id, {
+    assignedTo: integer('assigned_to').references(() => teams.id, {
       onDelete: 'set null',
     }),
     priority: issuePriorityEnum('priority').default('medium').notNull(),
-    status: issueStatusEnum('status').default('open').notNull(),
-    createdAt: timestamp('created_at')
+    status: issueStatusEnum('status').default('in_progress').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
-    updatedAt: timestamp('updated_at')
+    updatedAt: timestamp('updated_at', { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull()
       .$onUpdate(() => new Date()),
@@ -142,23 +150,104 @@ export const issues = pgTable(
   (t) => [
     index('issue_name_idx').on(t.name),
     index('issue_project_idx').on(t.projectId),
+    index('issue_assigned_to_idx').on(t.assignedTo),
   ],
 );
 
 export const teams = pgTable(
   'team',
-  (d) => ({
-    id: d.integer().primaryKey().generatedByDefaultAsIdentity(),
-    name: d.varchar({ length: 256 }),
-    email: d.varchar({ length: 256 }),
-    phone: d.varchar({ length: 256 }),
+  {
+    id: serial('id').primaryKey(),
+    name: varchar('name', { length: 256 }).notNull(),
+    email: varchar('email', { length: 256 }).notNull(),
+    phone: varchar('phone', { length: 256 }),
     role: teamRolesEnum('role').default('Developer').notNull(),
-    department: d.varchar({ length: 256 }),
-    createdAt: d
-      .timestamp({ withTimezone: true })
+    department: varchar('department', { length: 256 }),
+    createdAt: timestamp('created_at', { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
-    updatedAt: d.timestamp({ withTimezone: true }).$onUpdate(() => new Date()),
-  }),
-  (t) => [index('team_name_idx').on(t.name)],
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => [
+    index('team_name_idx').on(t.name),
+    index('team_email_idx').on(t.email),
+  ],
 );
+
+// Junction table for many-to-many relationship between projects and teams
+export const projectMembers = pgTable(
+  'project_member',
+  {
+    projectId: integer('project_id')
+      .notNull()
+      .references(() => projects.id, { onDelete: 'cascade' }),
+    teamId: integer('team_id')
+      .notNull()
+      .references(() => teams.id, { onDelete: 'cascade' }),
+    role: varchar('role', { length: 100 }),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.projectId, t.teamId] }),
+    index('project_member_project_idx').on(t.projectId),
+    index('project_member_team_idx').on(t.teamId),
+  ],
+);
+
+// Define relations for better type safety and easier joins
+
+export const userRelations = relations(user, ({ many }) => ({
+  sessions: many(session),
+  accounts: many(account),
+}));
+
+export const sessionRelations = relations(session, ({ one }) => ({
+  user: one(user, {
+    fields: [session.userId],
+    references: [user.id],
+  }),
+}));
+
+export const accountRelations = relations(account, ({ one }) => ({
+  user: one(user, {
+    fields: [account.userId],
+    references: [user.id],
+  }),
+}));
+
+export const projectRelations = relations(projects, ({ many }) => ({
+  issues: many(issues),
+  members: many(projectMembers),
+}));
+
+export const issueRelations = relations(issues, ({ one }) => ({
+  project: one(projects, {
+    fields: [issues.projectId],
+    references: [projects.id],
+  }),
+  assignee: one(teams, {
+    fields: [issues.assignedTo],
+    references: [teams.id],
+  }),
+}));
+
+export const teamRelations = relations(teams, ({ many }) => ({
+  projects: many(projectMembers),
+  assignedIssues: many(issues, { relationName: 'assignee' }),
+}));
+
+export const projectMemberRelations = relations(projectMembers, ({ one }) => ({
+  project: one(projects, {
+    fields: [projectMembers.projectId],
+    references: [projects.id],
+  }),
+  team: one(teams, {
+    fields: [projectMembers.teamId],
+    references: [teams.id],
+  }),
+}));

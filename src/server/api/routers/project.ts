@@ -12,7 +12,7 @@ export const projectRouter = createTRPCRouter({
   getAllProjects: publicProcedure.query(async ({ ctx }) => {
     return await ctx.db.select().from(projects);
   }),
-  getProjectById: protectedProcedure
+  getProjectById: publicProcedure
     .input(
       z.object({
         projectId: z.number(),
@@ -48,7 +48,7 @@ export const projectRouter = createTRPCRouter({
         })
         .where(eq(projects.id, input.projectId));
     }),
-  create: publicProcedure
+  create: protectedProcedure
     .input(
       z.object({
         name: z.string().min(1),

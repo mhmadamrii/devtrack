@@ -4,11 +4,13 @@ import type React from 'react';
 
 import { useState } from 'react';
 import { Calendar } from '~/components/ui/calendar';
+import { api } from '~/trpc/react';
 import { cn } from '~/lib/utils';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Input } from '~/components/ui/input';
+import { toast } from 'sonner';
 import { Textarea } from '~/components/ui/textarea';
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
@@ -49,24 +51,56 @@ import {
 
 // Sample data
 const projects = [
-  { id: '1', name: 'Website Redesign' },
-  { id: '2', name: 'Mobile App Development' },
-  { id: '3', name: 'API Integration' },
-  { id: '4', name: 'Database Migration' },
+  {
+    id: '1',
+    name: 'Website Redesign',
+  },
+  {
+    id: '2',
+    name: 'Mobile App Development',
+  },
+  {
+    id: '3',
+    name: 'API Integration',
+  },
+  {
+    id: '4',
+    name: 'Database Migration',
+  },
 ];
 
 const members = [
-  { id: '1', name: 'John Doe' },
-  { id: '2', name: 'Jane Smith' },
-  { id: '3', name: 'Mike Johnson' },
-  { id: '4', name: 'Sarah Williams' },
+  {
+    id: '1',
+    name: 'John Doe',
+  },
+  {
+    id: '2',
+    name: 'Jane Smith',
+  },
+  {
+    id: '3',
+    name: 'Mike Johnson',
+  },
+  {
+    id: '4',
+    name: 'Sarah Williams',
+  },
 ];
 
 const priorities = [
-  { value: 'Low', label: 'Low' },
-  { value: 'Medium', label: 'Medium' },
-  { value: 'High', label: 'High' },
-  { value: 'Critical', label: 'Critical' },
+  {
+    value: 'low',
+    label: 'Low',
+  },
+  {
+    value: 'medium',
+    label: 'Medium',
+  },
+  {
+    value: 'high',
+    label: 'High',
+  },
 ];
 
 const formSchema = z.object({
@@ -90,6 +124,29 @@ interface NewIssueDialogProps {
 export function NewIssueDialog({ children }: NewIssueDialogProps) {
   const [open, setOpen] = useState(false);
 
+  const { data: projectsData, refetch: getProjects } =
+    api.project.getAllProjects.useQuery(undefined, {
+      enabled: false,
+    });
+
+  const { data: teamData, refetch: getTeam } = api.team.getAllTeams.useQuery(
+    undefined,
+    {
+      enabled: false,
+    },
+  );
+
+  const { mutate: createIssue, isPending } = api.issue.create.useMutation({
+    onSuccess: () => {
+      toast.success('Issue created successfully');
+      setOpen(false);
+    },
+    onError: (error) => {
+      toast.error(error.message);
+      console.log('error', error);
+    },
+  });
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -99,11 +156,15 @@ export function NewIssueDialog({ children }: NewIssueDialogProps) {
   });
 
   function onSubmit(data: FormValues) {
-    // In a real app, you would send this data to your API
     console.log('Form submitted:', data);
-
-    // Close the dialog
-    setOpen(false);
+    createIssue({
+      name: data.title,
+      description: data.description ?? '',
+      projectId: parseInt(data.project),
+      assignedTo: data.assignedTo,
+      priority: data.priority as 'low' | 'medium' | 'high',
+      status: 'open',
+    });
 
     // Reset the form
     form.reset();
@@ -149,6 +210,11 @@ export function NewIssueDialog({ children }: NewIssueDialogProps) {
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
+                      onOpenChange={(open) => {
+                        if (open && !projectsData) {
+                          getProjects();
+                        }
+                      }}
                     >
                       <FormControl>
                         <SelectTrigger className='w-full'>
@@ -156,11 +222,20 @@ export function NewIssueDialog({ children }: NewIssueDialogProps) {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {projects.map((project) => (
-                          <SelectItem key={project.id} value={project.id}>
-                            {project.name}
+                        {projectsData ? (
+                          projectsData.map((project) => (
+                            <SelectItem
+                              key={project.id}
+                              value={project.id.toString()}
+                            >
+                              {project.name}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem disabled value='not_found'>
+                            No projects found
                           </SelectItem>
-                        ))}
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -177,6 +252,11 @@ export function NewIssueDialog({ children }: NewIssueDialogProps) {
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
+                      onOpenChange={(open) => {
+                        if (open && !teamData) {
+                          getTeam();
+                        }
+                      }}
                     >
                       <FormControl>
                         <SelectTrigger className='w-full'>
@@ -184,11 +264,20 @@ export function NewIssueDialog({ children }: NewIssueDialogProps) {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {members.map((member) => (
-                          <SelectItem key={member.id} value={member.id}>
-                            {member.name}
+                        {teamData ? (
+                          teamData.map((member) => (
+                            <SelectItem
+                              key={member.id}
+                              value={member.id.toString()}
+                            >
+                              {member.name}
+                            </SelectItem>
+                          ))
+                        ) : (
+                          <SelectItem disabled value={'not_found'}>
+                            No team members found
                           </SelectItem>
-                        ))}
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -293,13 +382,20 @@ export function NewIssueDialog({ children }: NewIssueDialogProps) {
 
             <DialogFooter>
               <Button
+                className='cursor-pointer'
                 type='button'
                 variant='outline'
                 onClick={() => setOpen(false)}
               >
                 Cancel
               </Button>
-              <Button type='submit'>Create Issue</Button>
+              <Button
+                className='cursor-pointer'
+                type='submit'
+                disabled={isPending}
+              >
+                {isPending ? 'Creating...' : 'Create Issue'}
+              </Button>
             </DialogFooter>
           </form>
         </Form>
