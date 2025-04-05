@@ -95,6 +95,7 @@ export function Navbar() {
           <nav className='hidden md:flex items-center gap-6'>
             {NAV_LINKS.map((item, idx) => (
               <Link
+                prefetch={true}
                 key={idx}
                 href={item.link}
                 className={cn('font-medium', {

@@ -15,6 +15,7 @@ import { Textarea } from '~/components/ui/textarea';
 import { CalendarIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from '~/components/ui/button';
+import { useRouter } from 'next/navigation';
 import {
   Dialog,
   DialogContent,
@@ -122,6 +123,7 @@ interface NewIssueDialogProps {
 }
 
 export function NewIssueDialog({ children }: NewIssueDialogProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
 
   const { data: projectsData, refetch: getProjects } =
@@ -139,6 +141,7 @@ export function NewIssueDialog({ children }: NewIssueDialogProps) {
   const { mutate: createIssue, isPending } = api.issue.create.useMutation({
     onSuccess: () => {
       toast.success('Issue created successfully');
+      router.refresh();
       setOpen(false);
     },
     onError: (error) => {
