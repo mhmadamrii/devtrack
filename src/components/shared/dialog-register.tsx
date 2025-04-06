@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { Button } from '~/components/ui/button';
 import { toast } from 'sonner';
 import { authClient } from '~/server/auth/client';
+import { PinWheelLoader } from '../ui/pinwheel';
+import { Spinner } from './spinner';
 
 import {
   Card,
@@ -22,7 +24,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '~/components/ui/dialog';
-import { PinWheelLoader } from '../ui/pinwheel';
 
 export function DialogRegister({
   open,
@@ -51,6 +52,26 @@ export function DialogRegister({
     }));
   };
 
+  const handleLogin = async () => {
+    await authClient.signIn.email(
+      {
+        email: credentials.email,
+        password: credentials.password,
+      },
+      {
+        onSuccess: () => {
+          console.log('pushing to dashboard');
+          router.push('/');
+        },
+        onError: (err) => {
+          console.log('error', err);
+          toast.error('Failed to register');
+          setIsLoading(false);
+        },
+      },
+    );
+  };
+
   const handleRegister = async () => {
     setIsLoading(true);
     await authClient.signUp.email(
@@ -61,8 +82,8 @@ export function DialogRegister({
       },
       {
         onSuccess: (res) => {
-          //   router.push('/');
-          console.log('response', res);
+          toast.success('Successfully registered');
+          handleLogin();
         },
         onError: (err) => {
           console.log('error', err);
@@ -125,7 +146,7 @@ export function DialogRegister({
                 className='cursor-pointer'
                 disabled={isLoading}
               >
-                {isLoading ? <PinWheelLoader /> : 'Get Started'}
+                {isLoading ? <Spinner /> : 'Get Started'}
               </Button>
             </div>
             <div className='relative my-4 flex items-center justify-center overflow-hidden'>

@@ -14,6 +14,7 @@ import { cn } from '~/lib/utils';
 import { ThemeToggle } from '../ui/theme-toggle';
 import { usePathname } from 'next/navigation';
 import { authClient } from '~/server/auth/client';
+import { NotificationPopover } from './notification-popover';
 import { toast } from 'sonner';
 
 import {
@@ -119,11 +120,7 @@ export function Navbar() {
           </div>
 
           <ThemeToggle />
-
-          <Button variant='ghost' size='icon'>
-            <Bell className='h-5 w-5' />
-            <span className='sr-only'>Notifications</span>
-          </Button>
+          <NotificationPopover />
 
           <Popover>
             <PopoverTrigger asChild>

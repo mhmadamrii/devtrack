@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 
+import type { ProjectDetailsType } from '~/server/db/types';
 import { useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
@@ -294,9 +295,14 @@ const projects = [
 
 interface ProjectDetailsProps {
   projectId: string;
+  projectDetails: ProjectDetailsType;
 }
 
-export function ProjectDetails({ projectId }: ProjectDetailsProps) {
+export function ProjectDetails({
+  projectId,
+  projectDetails,
+}: ProjectDetailsProps) {
+  console.log('projectDetails', projectDetails);
   const [activeTab, setActiveTab] = useState('overview');
 
   const project = projects.find((p) => p.id === projectId);
@@ -370,8 +376,11 @@ export function ProjectDetails({ projectId }: ProjectDetailsProps) {
       <div className='flex flex-col md:flex-row md:items-center justify-between gap-4'>
         <div>
           <div className='flex items-center gap-3'>
-            <h1 className='text-3xl font-bold'>{project.name}</h1>
-            <Badge variant='outline' className={getStatusColor(project.status)}>
+            <h1 className='text-3xl font-bold'>{projectDetails.name}</h1>
+            <Badge
+              variant='outline'
+              className={getStatusColor(projectDetails.status as string)}
+            >
               {project.status}
             </Badge>
           </div>
@@ -382,9 +391,11 @@ export function ProjectDetails({ projectId }: ProjectDetailsProps) {
           </p>
         </div>
         <div className='flex items-center gap-2'>
-          <Button variant='outline' className='gap-2'>
-            <Edit className='h-4 w-4' />
-            Edit Project
+          <Button variant='outline' className='gap-2' asChild>
+            <Link href={`/projects/edit/${project.id}`}>
+              <Edit className='h-4 w-4' />
+              Edit Project
+            </Link>
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -430,7 +441,9 @@ export function ProjectDetails({ projectId }: ProjectDetailsProps) {
             <CardContent className='space-y-6'>
               <div>
                 <h3 className='text-lg font-medium mb-2'>Description</h3>
-                <p className='text-muted-foreground'>{project.description}</p>
+                <p className='text-muted-foreground'>
+                  {projectDetails.description}
+                </p>
               </div>
 
               <div>
@@ -438,11 +451,13 @@ export function ProjectDetails({ projectId }: ProjectDetailsProps) {
                 <div className='space-y-2'>
                   <div className='flex justify-between items-center'>
                     <span>Overall Completion</span>
-                    <span className='font-medium'>{project.progress}%</span>
+                    <span className='font-medium'>
+                      {projectDetails.progress}%
+                    </span>
                   </div>
                   <Progress
-                    value={project.progress}
-                    className={getProgressColor(project.progress)}
+                    value={projectDetails.progress}
+                    className={getProgressColor(projectDetails.progress!)}
                   />
                 </div>
               </div>

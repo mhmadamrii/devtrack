@@ -1,6 +1,8 @@
+import { api } from '~/trpc/server';
 import { Navbar } from '~/components/shared/navbar';
 import { ProjectDetails } from '~/components/shared/project-details';
 import { ChevronRight, Home } from 'lucide-react';
+import { Suspense } from 'react';
 
 import {
   Breadcrumb,
@@ -15,6 +17,15 @@ interface ProjectPageProps {
   params: Promise<{
     id: string;
   }>;
+}
+
+async function ProjectWithData({ projectId }: { projectId: string }) {
+  const projectById = await api.project.getDetailProjectById({
+    projectId: Number(projectId),
+  });
+
+  console.log('project by id', projectById);
+  return <ProjectDetails projectDetails={projectById} projectId={projectId} />;
 }
 
 export default async function ProjectPage({ params }: ProjectPageProps) {
@@ -50,7 +61,9 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             </BreadcrumbList>
           </Breadcrumb>
 
-          <ProjectDetails projectId={id} />
+          <Suspense fallback={<p>Loading..</p>}>
+            <ProjectWithData projectId={id} />
+          </Suspense>
         </div>
       </main>
     </div>
