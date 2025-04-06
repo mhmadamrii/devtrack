@@ -66,7 +66,10 @@ async function IssuesCard() {
                 <TableCell className='font-medium'>{issue.name}</TableCell>
                 <TableCell>{new Date().toLocaleDateString()}</TableCell>
                 <TableCell>
-                  <AssigneeBy name={issue.assigneeName ?? ''} />
+                  <AssigneeBy
+                    teamId={issue.assignedTo ?? 0}
+                    name={issue.assigneeName ?? ''}
+                  />
                 </TableCell>
                 <TableCell>{issue.projectName}</TableCell>
                 <TableCell>

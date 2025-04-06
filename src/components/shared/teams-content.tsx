@@ -26,21 +26,21 @@ import {
   TableRow,
 } from '~/components/ui/table';
 
-const getStatusColor = (status: string) => {
-  switch (status) {
-    case 'Active':
-      return 'bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-950/50';
-    case 'On Leave':
-      return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950/50 dark:text-yellow-300 hover:bg-yellow-100 dark:hover:bg-yellow-950/50';
-    case 'Inactive':
-      return 'bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-950/50';
-    default:
-      return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800';
-  }
-};
-
 async function TableMembers() {
   const allTeams = await api.team.getAllTeams();
+
+  const getStatusMemberColor = (status: string): string => {
+    switch (status) {
+      case 'Active':
+        return 'bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-950/50';
+      case 'Inactive':
+        return 'bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-950/50';
+      case 'On Leave':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950/50 dark:text-yellow-300 hover:bg-yellow-100 dark:hover:bg-yellow-950/50';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800';
+    }
+  };
 
   return allTeams.map((member) => (
     <TableRow key={member.id}>
@@ -51,15 +51,15 @@ async function TableMembers() {
       </TableCell>
       <TableCell>{member.role}</TableCell>
       <TableCell>{member.department}</TableCell>
-      <TableCell>
+      {/* <TableCell>
         <div className='flex flex-wrap gap-1'>
           <Badge variant='outline' className='bg-muted'>
             Web Development
           </Badge>
         </div>
-      </TableCell>
+      </TableCell> */}
       <TableCell>
-        <Badge variant='outline' className={getStatusColor('Active')}>
+        <Badge variant='outline' className={getStatusMemberColor('Active')}>
           Active
         </Badge>
       </TableCell>
@@ -130,7 +130,7 @@ export function TeamsContent() {
                   <TableHead>Name</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Department</TableHead>
-                  <TableHead>Projects</TableHead>
+                  {/* <TableHead>Projects</TableHead> */}
                   <TableHead>Status</TableHead>
                   <TableHead>Contact</TableHead>
                   <TableHead className='text-right'>Actions</TableHead>

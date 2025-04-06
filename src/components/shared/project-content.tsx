@@ -7,6 +7,7 @@ import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
 import { Input } from '~/components/ui/input';
 import { Progress } from '~/components/ui/progress';
+import { getLabelStatus } from '~/lib/utils';
 
 import {
   Card,
@@ -25,13 +26,14 @@ import {
 
 async function ProjectCards() {
   const projects = await api.project.getAllProjects();
+
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Planning':
+      case 'open':
         return 'bg-blue-100 text-blue-800 dark:bg-blue-950/50 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-950/50';
-      case 'In Progress':
+      case 'in_progress':
         return 'bg-purple-100 text-purple-800 dark:bg-purple-950/50 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-950/50';
-      case 'Completed':
+      case 'closed':
         return 'bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-950/50';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800';
@@ -69,7 +71,7 @@ async function ProjectCards() {
           </DropdownMenu>
         </div>
         <Badge variant='outline' className={getStatusColor(project.status)}>
-          {project.status}
+          {getLabelStatus(project.status)}
         </Badge>
       </CardHeader>
       <CardContent>

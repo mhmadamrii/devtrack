@@ -19,6 +19,7 @@ export function StatusTable({
   currentStatus: string;
   issueId: number;
 }) {
+  console.log('currentStatus', currentStatus);
   const router = useRouter();
   const { mutate: updateStatus, isPending } =
     api.issue.updateStatus.useMutation({
@@ -27,8 +28,9 @@ export function StatusTable({
         router.refresh();
       },
     });
-  const getStatusColor = (status: string) => {
-    switch (status) {
+
+  const getStatusColor = () => {
+    switch (currentStatus) {
       case 'open':
         return 'bg-blue-100 text-blue-800 dark:bg-blue-950/50 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-950/50';
       case 'in_progress':
@@ -59,7 +61,7 @@ export function StatusTable({
         <Badge
           variant='outline'
           className={
-            getStatusColor(currentStatus) +
+            getStatusColor() +
             'rounded-4xl flex w-full justify-center items-center cursor-pointer'
           }
         >
