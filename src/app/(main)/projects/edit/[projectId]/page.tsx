@@ -5,6 +5,8 @@ import { api } from '~/trpc/server';
 import { Navbar } from '~/components/shared/navbar';
 import { EditProjectForm } from '~/components/shared/edit-project-form';
 import { ChevronRight, Home } from 'lucide-react';
+import { EditProjectSkeleton } from '~/components/skeletons/edit-project-skeleton';
+
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -77,66 +79,48 @@ export default async function EditProjectPage({
   const id = await params;
 
   return (
-    <div className='flex min-h-screen flex-col'>
-      <Navbar />
-      <main className='flex-1 p-4 md:p-6 lg:p-8'>
-        <div className='flex flex-col gap-6 max-w-3xl mx-auto'>
-          <Breadcrumb className='mb-4'>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink
-                  className='w-[70px] flex items-center gap-2'
-                  asChild
-                >
-                  <Link href='/'>
-                    <Home className='h-4 w-4 mr-1' />
-                    Home
-                  </Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator>
-                <ChevronRight className='h-4 w-4' />
-              </BreadcrumbSeparator>
-              <BreadcrumbItem>
-                <BreadcrumbLink asChild>
-                  <Link href='/projects'>Projects</Link>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator>
-                <ChevronRight className='h-4 w-4' />
-              </BreadcrumbSeparator>
-              <BreadcrumbItem>
-                <BreadcrumbPage>New Project</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
+    <main className='flex-1 p-4 md:p-6 lg:p-8'>
+      <div className='flex flex-col gap-6 max-w-3xl mx-auto'>
+        <Breadcrumb className='mb-4'>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink
+                className='w-[70px] flex items-center gap-2'
+                asChild
+              >
+                <Link href='/'>
+                  <Home className='h-4 w-4 mr-1' />
+                  Home
+                </Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator>
+              <ChevronRight className='h-4 w-4' />
+            </BreadcrumbSeparator>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link href='/projects'>Projects</Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator>
+              <ChevronRight className='h-4 w-4' />
+            </BreadcrumbSeparator>
+            <BreadcrumbItem>
+              <BreadcrumbPage>New Project</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
 
-          <h1 className='text-3xl font-bold'>Edit Project</h1>
-          <p className='text-muted-foreground'>
-            Fill in the details below to create a new project. All fields marked
-            with an asterisk (*) are required.
-          </p>
+        <h1 className='text-3xl font-bold'>Edit Project</h1>
+        <p className='text-muted-foreground'>
+          Fill in the details below to create a new project. All fields marked
+          with an asterisk (*) are required.
+        </p>
 
-          <Suspense
-            fallback={
-              <div className='p-8 animate-pulse space-y-4'>
-                <div className='h-8 bg-gray-200 rounded w-1/4'></div>
-                <div className='space-y-2'>
-                  <div className='h-4 bg-gray-200 rounded w-full'></div>
-                  <div className='h-4 bg-gray-200 rounded w-3/4'></div>
-                </div>
-                <div className='space-y-3'>
-                  <div className='h-10 bg-gray-200 rounded'></div>
-                  <div className='h-20 bg-gray-200 rounded'></div>
-                  <div className='h-10 bg-gray-200 rounded'></div>
-                </div>
-              </div>
-            }
-          >
-            <ProjectWithData projectId={id.projectId} />
-          </Suspense>
-        </div>
-      </main>
-    </div>
+        <Suspense fallback={<EditProjectSkeleton />}>
+          <ProjectWithData projectId={id.projectId} />
+        </Suspense>
+      </div>
+    </main>
   );
 }

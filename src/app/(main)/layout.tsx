@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import { Navbar } from '~/components/shared/navbar';
 import { getServerSession } from '~/server/auth';
 
 export default async function MainLayout({
@@ -11,5 +12,10 @@ export default async function MainLayout({
     redirect('/hi');
   }
 
-  return <>{children}</>;
+  return (
+    <div className='flex min-h-screen scroll-smooth flex-col'>
+      <Navbar />
+      {children}
+    </div>
+  );
 }

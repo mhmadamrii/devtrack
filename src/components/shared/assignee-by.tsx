@@ -4,6 +4,7 @@ import Link from 'next/link';
 
 import { CalendarIcon } from 'lucide-react';
 import { Button } from '~/components/ui/button';
+import { api } from '~/trpc/react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import {
@@ -11,7 +12,6 @@ import {
   HoverCardContent,
   HoverCardTrigger,
 } from '~/components/ui/hover-card';
-import { api } from '~/trpc/react';
 
 interface AssigneeByProps {
   name: string;

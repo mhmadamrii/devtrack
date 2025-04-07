@@ -1,6 +1,7 @@
 import { api } from '~/trpc/server';
 import { Navbar } from '~/components/shared/navbar';
 import { Suspense } from 'react';
+import { ProfileSkeleton } from '~/components/skeletons/profile-skeleton';
 
 import {
   ChevronRight,
@@ -48,7 +49,6 @@ async function TeamMemberProfile({ teamId }: { teamId: string }) {
 
   const member = teamMember[0];
 
-  // Format date for display
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
@@ -179,13 +179,7 @@ export default async function ProfileId({
             </BreadcrumbList>
           </Breadcrumb>
 
-          <Suspense
-            fallback={
-              <div className='p-4 text-center'>
-                Loading team member profile...
-              </div>
-            }
-          >
+          <Suspense fallback={<ProfileSkeleton />}>
             <TeamMemberProfile teamId={id.id} />
           </Suspense>
         </div>

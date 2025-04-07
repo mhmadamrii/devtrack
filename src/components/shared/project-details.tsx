@@ -10,6 +10,7 @@ import { Progress } from '~/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import { Avatar, AvatarFallback } from '~/components/ui/avatar';
 import { NewIssueDialog } from '../shared/new-issue-dialog';
+import { AddTeamMemberDialog } from '../shared/add-team-member-dialog';
 import { getStatusColor } from '~/lib/utils';
 
 import {
@@ -23,6 +24,7 @@ import {
   AlertCircle,
   ArrowUpRight,
   History,
+  Mail,
 } from 'lucide-react';
 
 import {
@@ -303,7 +305,6 @@ export function ProjectDetails({
   projectId,
   projectDetails,
 }: ProjectDetailsProps) {
-  console.log('projectDetails', projectDetails);
   const [activeTab, setActiveTab] = useState('overview');
 
   const project = projects.find((p) => p.id === projectId);
@@ -663,61 +664,105 @@ export function ProjectDetails({
         <TabsContent value='team' className='space-y-6'>
           <div className='flex justify-between items-center'>
             <h2 className='text-2xl font-bold'>Team Members</h2>
-            <Button>
-              <Plus className='mr-2 h-4 w-4' />
-              Add Team Member
-            </Button>
+            <AddTeamMemberDialog
+              projectId={parseInt(projectId)}
+              onSuccess={() => {
+                // Refresh the project data
+                window.location.reload();
+              }}
+            />
           </div>
 
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
-            {project.members.map((member) => (
-              <Card key={member.id} className='border-border'>
-                <CardHeader className='pb-2'>
-                  <div className='flex items-start justify-between'>
-                    <div className='flex items-center gap-3'>
-                      <Avatar className='h-10 w-10'>
-                        <AvatarFallback>{member.avatar}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <CardTitle className='text-base'>
-                          {member.name}
-                        </CardTitle>
-                        <CardDescription>{member.role}</CardDescription>
+            {projectDetails.teamMembers &&
+            projectDetails.teamMembers.length > 0 ? (
+              projectDetails.teamMembers.map((member) => (
+                <Card key={member.teamId} className='border-border'>
+                  <CardHeader className='pb-2'>
+                    <div className='flex items-start justify-between'>
+                      <div className='flex items-center gap-3'>
+                        <Avatar className='h-10 w-10'>
+                          <AvatarFallback>
+                            {member.teamName
+                              ?.split(' ')
+                              .map((part) => part[0])
+                              .join('')
+                              .toUpperCase() || 'TM'}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <CardTitle className='text-base'>
+                            {member.teamName}
+                          </CardTitle>
+                          <CardDescription>
+                            {member.projectRole || member.teamRole}
+                          </CardDescription>
+                        </div>
                       </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant='ghost' size='icon'>
+                            <MoreHorizontal className='h-4 w-4' />
+                            <span className='sr-only'>More options</span>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align='end'>
+                          <DropdownMenuItem asChild>
+                            <Link href={`/profile/${member.teamId}`}>
+                              View Profile
+                            </Link>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>Change Role</DropdownMenuItem>
+                          <DropdownMenuItem className='text-red-500'>
+                            Remove from Project
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant='ghost' size='icon'>
-                          <MoreHorizontal className='h-4 w-4' />
-                          <span className='sr-only'>More options</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align='end'>
-                        <DropdownMenuItem>View Profile</DropdownMenuItem>
-                        <DropdownMenuItem>Change Role</DropdownMenuItem>
-                        <DropdownMenuItem>Remove from Project</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className='flex items-center gap-2 text-sm text-muted-foreground'>
-                    <Clock className='h-4 w-4' />
-                    <span>
-                      Joined {Math.floor(Math.random() * 12) + 1} months ago
-                    </span>
-                  </div>
-                </CardContent>
-                <CardFooter className='border-t pt-4 flex justify-between'>
-                  <Button variant='outline' size='sm'>
-                    Message
-                  </Button>
-                  <Button variant='outline' size='sm'>
-                    View Tasks
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
+                  </CardHeader>
+                  <CardContent>
+                    <div className='flex items-center gap-2 text-sm text-muted-foreground'>
+                      <Clock className='h-4 w-4' />
+                      <span>{member.teamDepartment || 'Team Member'}</span>
+                    </div>
+                    {member.teamEmail && (
+                      <div className='flex items-center gap-2 text-sm text-muted-foreground mt-1'>
+                        <Mail className='h-4 w-4' />
+                        <span>{member.teamEmail}</span>
+                      </div>
+                    )}
+                  </CardContent>
+                  <CardFooter className='border-t pt-4 flex justify-between'>
+                    <Button variant='outline' size='sm' asChild>
+                      <Link href={`/profile/${member.teamId}`}>
+                        View Profile
+                      </Link>
+                    </Button>
+                    <Button variant='outline' size='sm'>
+                      View Tasks
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))
+            ) : (
+              <div className='col-span-3 p-8 text-center border rounded-lg'>
+                <Users className='h-12 w-12 mx-auto text-muted-foreground mb-4' />
+                <h3 className='text-lg font-medium mb-2'>
+                  No Team Members Yet
+                </h3>
+                <p className='text-muted-foreground mb-4'>
+                  This project doesn't have any team members assigned yet.
+                </p>
+                <AddTeamMemberDialog
+                  projectId={parseInt(projectId)}
+                  variant='outline'
+                  onSuccess={() => {
+                    // Refresh the project data
+                    window.location.reload();
+                  }}
+                />
+              </div>
+            )}
           </div>
         </TabsContent>
 

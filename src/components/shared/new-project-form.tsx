@@ -46,40 +46,6 @@ import {
   PopoverTrigger,
 } from '~/components/ui/popover';
 
-// Sample data
-const members = [
-  {
-    id: '1',
-    name: 'John Doe',
-    role: 'Developer',
-  },
-  {
-    id: '2',
-    name: 'Jane Smith',
-    role: 'Designer',
-  },
-  {
-    id: '3',
-    name: 'Mike Johnson',
-    role: 'Project Manager',
-  },
-  {
-    id: '4',
-    name: 'Sarah Williams',
-    role: 'QA Engineer',
-  },
-  {
-    id: '5',
-    name: 'David Brown',
-    role: 'DevOps Engineer',
-  },
-  {
-    id: '6',
-    name: 'Emily Davis',
-    role: 'Backend Developer',
-  },
-];
-
 const statuses = [
   {
     value: 'planning',
@@ -113,7 +79,7 @@ const formSchema = z
     endDate: z.date({ required_error: 'End date is required' }),
     status: z.string({ required_error: 'Please select a status' }),
     teamMembers: z
-      .array(z.string())
+      .array(z.number())
       .min(1, { message: 'Select at least one team member' }),
   })
   .refine((data) => data.endDate >= data.startDate, {
@@ -142,6 +108,8 @@ export function NewProjectForm() {
       },
     });
 
+  const { data: teamData } = api.team.getAllTeams.useQuery();
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -154,7 +122,6 @@ export function NewProjectForm() {
 
   function onSubmit(data: FormValues) {
     console.log('Form submitted:', data);
-    console.log('progress:', progress);
     createProject({
       name: data.name,
       description: data.description,
@@ -345,7 +312,7 @@ export function NewProjectForm() {
                     </FormDescription>
                   </div>
                   <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                    {members.map((member) => (
+                    {teamData?.map((member) => (
                       <FormField
                         key={member.id}
                         control={form.control}
@@ -361,6 +328,7 @@ export function NewProjectForm() {
                                   disabled={isSubmitting}
                                   checked={field.value?.includes(member.id)}
                                   onCheckedChange={(checked) => {
+                                    console.log('checked', checked);
                                     return checked
                                       ? field.onChange([
                                           ...field.value,

@@ -156,7 +156,7 @@ export function Navbar() {
                   ACCOUNT
                 </div>
                 <Button
-                  onClick={() => router.prefetch('/profile')}
+                  onClick={() => router.push('/profile')}
                   variant='ghost'
                   size='sm'
                   className='w-full justify-start gap-2'
@@ -165,7 +165,7 @@ export function Navbar() {
                   Profile
                 </Button>
                 <Button
-                  onClick={() => router.prefetch('/settings')}
+                  onClick={() => router.push('/settings')}
                   variant='ghost'
                   size='sm'
                   className='w-full justify-start gap-2'
