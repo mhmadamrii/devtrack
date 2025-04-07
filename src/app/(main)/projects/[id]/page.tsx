@@ -4,6 +4,23 @@ import { ProjectDetails } from '~/components/shared/project-details';
 import { ChevronRight, Home } from 'lucide-react';
 import { Suspense } from 'react';
 
+export const revalidate = 3600;
+export const dynamicParams = true;
+
+export async function generateStaticParams() {
+  const projects = await api.project.getAllProjects();
+
+  return projects
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    )
+    .slice(0, 20)
+    .map((project) => ({
+      id: project.id.toString(),
+    }));
+}
+
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -61,7 +78,23 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
             </BreadcrumbList>
           </Breadcrumb>
 
-          <Suspense fallback={<p>Loading..</p>}>
+          <Suspense
+            fallback={
+              <div className='p-8 text-center'>
+                <div className='animate-pulse space-y-6'>
+                  <div className='h-8 bg-gray-200 rounded w-1/3'></div>
+                  <div className='space-y-3'>
+                    <div className='h-4 bg-gray-200 rounded w-3/4'></div>
+                    <div className='h-4 bg-gray-200 rounded w-1/2'></div>
+                  </div>
+                  <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+                    <div className='h-32 bg-gray-200 rounded'></div>
+                    <div className='h-32 bg-gray-200 rounded'></div>
+                  </div>
+                </div>
+              </div>
+            }
+          >
             <ProjectWithData projectId={id} />
           </Suspense>
         </div>

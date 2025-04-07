@@ -26,9 +26,17 @@ import { db } from '~/server/db';
  * @see https://trpc.io/docs/server/context
  */
 export const createTRPCContext = async (opts: { headers: Headers }) => {
-  const session = await auth.api.getSession({
-    headers: opts.headers,
-  });
+  let session = null;
+
+  try {
+    session = await auth.api.getSession({
+      headers: opts.headers,
+    });
+  } catch (e) {
+    // During static generation, this might fail
+    // We'll proceed with a null session
+    console.log('Auth session error (likely during static generation):', e);
+  }
 
   return {
     db,

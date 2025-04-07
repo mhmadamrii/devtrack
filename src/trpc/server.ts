@@ -13,8 +13,19 @@ import { createQueryClient } from './query-client';
  * handling a tRPC call from a React Server Component.
  */
 const createContext = cache(async () => {
-  const heads = new Headers(await headers());
-  heads.set('x-trpc-source', 'rsc');
+  let heads: Headers;
+
+  try {
+    // Try to get headers, but this might fail during static generation
+    const headersList = await headers();
+    heads = new Headers(headersList);
+    heads.set('x-trpc-source', 'rsc');
+  } catch (e) {
+    // During static generation or when headers aren't available
+    console.log('Headers not available (likely during static generation):', e);
+    heads = new Headers();
+    heads.set('x-trpc-source', 'static');
+  }
 
   return createTRPCContext({
     headers: heads,

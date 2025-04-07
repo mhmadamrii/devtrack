@@ -8,7 +8,7 @@ import {
 } from '~/server/api/trpc';
 
 export const teamRouter = createTRPCRouter({
-  getAllTeams: protectedProcedure.query(async ({ ctx }) => {
+  getAllTeams: publicProcedure.query(async ({ ctx }) => {
     return await ctx.db.select().from(teams);
   }),
   getTeamById: publicProcedure
