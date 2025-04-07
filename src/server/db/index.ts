@@ -1,8 +1,8 @@
-import { drizzle } from 'drizzle-orm/postgres-js';
+import * as schema from './schema';
 import postgres from 'postgres';
 
+import { drizzle } from 'drizzle-orm/postgres-js';
 import { env } from '~/env';
-import * as schema from './schema';
 
 /**
  * Cache the database connection in development. This avoids creating a new connection on every HMR

@@ -3,13 +3,16 @@
 import type React from 'react';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '~/components/ui/button';
 import * as z from 'zod';
 import { Input } from '~/components/ui/input';
 import { Textarea } from '~/components/ui/textarea';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CheckCircle2 } from 'lucide-react';
+import { CheckCircle2, Loader2 } from 'lucide-react';
+import { api } from '~/trpc/react';
+import { toast } from 'sonner';
 
 import {
   Dialog,
@@ -69,6 +72,7 @@ interface OnboardingDialogProps {
 }
 
 export function OnboardingDialog({ children }: OnboardingDialogProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
@@ -84,13 +88,9 @@ export function OnboardingDialog({ children }: OnboardingDialogProps) {
     },
   });
 
-  function onSubmit(data: FormValues) {
-    setIsSubmitting(true);
-
-    // Simulate API call
-    setTimeout(() => {
-      console.log('Form submitted:', data);
-      setIsSubmitting(false);
+  const updateOnboarding = api.user.updateOnboardingStatus.useMutation({
+    onSuccess: () => {
+      toast.success('Profile completed!');
       setIsCompleted(true);
 
       // Close dialog after showing success message
@@ -98,8 +98,23 @@ export function OnboardingDialog({ children }: OnboardingDialogProps) {
         setOpen(false);
         setIsCompleted(false);
         form.reset();
+        router.refresh(); // Refresh the page to update the session
       }, 2000);
-    }, 1000);
+    },
+    onError: (error) => {
+      toast.error(error.message || 'Failed to complete profile');
+      setIsSubmitting(false);
+    },
+  });
+
+  function onSubmit(data: FormValues) {
+    setIsSubmitting(true);
+
+    // Save the form data and update onboarded status
+    console.log('Form submitted:', data);
+
+    // Update the onboarded status in the database
+    updateOnboarding.mutate({ onboarded: true });
   }
 
   return (
@@ -246,8 +261,18 @@ export function OnboardingDialog({ children }: OnboardingDialogProps) {
                   >
                     Cancel
                   </Button>
-                  <Button type='submit' disabled={isSubmitting}>
-                    {isSubmitting ? 'Saving...' : 'Save Profile'}
+                  <Button
+                    type='submit'
+                    disabled={isSubmitting || updateOnboarding.isPending}
+                  >
+                    {isSubmitting || updateOnboarding.isPending ? (
+                      <>
+                        <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                        Saving...
+                      </>
+                    ) : (
+                      'Save Profile'
+                    )}
                   </Button>
                 </DialogFooter>
               </form>

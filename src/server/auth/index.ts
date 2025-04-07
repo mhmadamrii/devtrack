@@ -22,7 +22,9 @@ export const auth = betterAuth({
       maxAge: 5 * 60, // Cache duration in seconds
     },
   },
-  user: {},
+  user: {
+    // extraSessionFields: ['onboarded'],
+  },
   rateLimit: {
     window: 60, // time window in seconds
     max: 5, // max requests in the window
