@@ -1,4 +1,5 @@
 import Link from 'next/link';
+
 import { Suspense } from 'react';
 import { api } from '~/trpc/server';
 import { Navbar } from '~/components/shared/navbar';

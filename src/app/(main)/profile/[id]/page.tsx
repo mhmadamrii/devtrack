@@ -1,5 +1,7 @@
 import { api } from '~/trpc/server';
 import { Navbar } from '~/components/shared/navbar';
+import { Suspense } from 'react';
+
 import {
   ChevronRight,
   Home,
@@ -8,6 +10,7 @@ import {
   Calendar,
   Briefcase,
 } from 'lucide-react';
+
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -16,13 +19,13 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '~/components/ui/breadcrumb';
-import { Suspense } from 'react';
 
-// Generate static params for all team members at build time
+export const revalidate = 3600;
+export const dynamicParams = true;
+
 export async function generateStaticParams() {
   const teams = await api.team.getAllTeams();
 
-  // Only generate static pages for the most recent 20 team members to optimize build time
   return teams
     .sort(
       (a, b) =>
@@ -33,12 +36,6 @@ export async function generateStaticParams() {
       id: team.id.toString(),
     }));
 }
-
-// Enable ISR with a revalidation period of 1 hour
-export const revalidate = 3600; // seconds
-
-// Enable dynamic rendering for paths not generated at build time
-export const dynamicParams = true;
 
 async function TeamMemberProfile({ teamId }: { teamId: string }) {
   const teamMember = await api.team.getTeamById({

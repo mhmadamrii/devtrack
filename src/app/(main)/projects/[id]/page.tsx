@@ -4,7 +4,7 @@ import { ProjectDetails } from '~/components/shared/project-details';
 import { ChevronRight, Home } from 'lucide-react';
 import { Suspense } from 'react';
 
-export const revalidate = 3600; // seconds
+export const revalidate = 3600;
 export const dynamicParams = true;
 
 export async function generateStaticParams() {
