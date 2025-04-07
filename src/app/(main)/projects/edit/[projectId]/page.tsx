@@ -1,5 +1,4 @@
 import Link from 'next/link';
-
 import { Suspense } from 'react';
 import { api } from '~/trpc/server';
 import { Navbar } from '~/components/shared/navbar';
@@ -14,13 +13,59 @@ import {
   BreadcrumbSeparator,
 } from '~/components/ui/breadcrumb';
 
-async function ProjectWithData({ projectId }: { projectId: string }) {
-  const projectById = await api.project.getProjectById({
-    projectId: Number(projectId),
-  });
+export const revalidate = 3600; // seconds
+export const dynamicParams = true;
 
-  console.log('projectById', projectById);
-  return <EditProjectForm initialProject={projectById[0]} />;
+export async function generateStaticParams() {
+  const projects = await api.project.getAllProjects();
+
+  return projects
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    )
+    .slice(0, 20)
+    .map((project) => ({
+      projectId: project.id.toString(),
+    }));
+}
+
+async function ProjectWithData({ projectId }: { projectId: string }) {
+  try {
+    const projectById = await api.project.getProjectById({
+      projectId: Number(projectId),
+    });
+
+    if (!projectById || !projectById[0]) {
+      return (
+        <div className='p-8 text-center'>
+          <h2 className='text-2xl font-bold mb-4'>Project Not Found</h2>
+          <p className='text-muted-foreground mb-6'>
+            The project you're trying to edit doesn't exist or has been removed.
+          </p>
+          <Link href='/projects' className='text-primary hover:underline'>
+            View all projects
+          </Link>
+        </div>
+      );
+    }
+
+    return <EditProjectForm initialProject={projectById[0]} />;
+  } catch (error) {
+    console.error('Error fetching project for editing:', error);
+    return (
+      <div className='p-8 text-center'>
+        <h2 className='text-2xl font-bold mb-4'>Error Loading Project</h2>
+        <p className='text-muted-foreground mb-6'>
+          There was a problem loading this project for editing. Please try again
+          later.
+        </p>
+        <Link href='/projects' className='text-primary hover:underline'>
+          View all projects
+        </Link>
+      </div>
+    );
+  }
 }
 
 export default async function EditProjectPage({
@@ -71,7 +116,22 @@ export default async function EditProjectPage({
             with an asterisk (*) are required.
           </p>
 
-          <Suspense fallback={<p>Loading..</p>}>
+          <Suspense
+            fallback={
+              <div className='p-8 animate-pulse space-y-4'>
+                <div className='h-8 bg-gray-200 rounded w-1/4'></div>
+                <div className='space-y-2'>
+                  <div className='h-4 bg-gray-200 rounded w-full'></div>
+                  <div className='h-4 bg-gray-200 rounded w-3/4'></div>
+                </div>
+                <div className='space-y-3'>
+                  <div className='h-10 bg-gray-200 rounded'></div>
+                  <div className='h-20 bg-gray-200 rounded'></div>
+                  <div className='h-10 bg-gray-200 rounded'></div>
+                </div>
+              </div>
+            }
+          >
             <ProjectWithData projectId={id.projectId} />
           </Suspense>
         </div>

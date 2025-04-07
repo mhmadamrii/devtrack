@@ -1,6 +1,6 @@
 import { betterAuth, type BetterAuthOptions } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-import { openAPI, admin } from 'better-auth/plugins';
+import { admin } from 'better-auth/plugins';
 import { headers } from 'next/headers';
 import { db } from '~/server/db';
 import { cache } from 'react';
@@ -33,12 +33,17 @@ export const auth = betterAuth({
   },
 } satisfies BetterAuthOptions);
 
-export const getServerSession = cache(
-  async () =>
-    await auth.api.getSession({
+export const getServerSession = cache(async () => {
+  try {
+    return await auth.api.getSession({
       headers: await headers(),
-    }),
-);
+    });
+  } catch (e) {
+    // During static generation, headers() is not available
+    // Return null session for static generation
+    return null;
+  }
+});
 
 export type Session = typeof auth.$Infer.Session;
 export type AuthUserType = Session['user'];
