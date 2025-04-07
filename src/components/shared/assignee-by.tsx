@@ -29,7 +29,6 @@ export function AssigneeBy({ name, teamId }: AssigneeByProps) {
     },
   );
 
-  // Format date for display
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('en-US', {
       month: 'long',
@@ -37,7 +36,6 @@ export function AssigneeBy({ name, teamId }: AssigneeByProps) {
     }).format(date);
   };
 
-  // Get initials from name
   const getInitials = (name: string | undefined) => {
     if (!name) return 'NA';
     return name
@@ -61,7 +59,7 @@ export function AssigneeBy({ name, teamId }: AssigneeByProps) {
           variant='link'
           asChild
         >
-          <Link className='text-blue-500 underline' href={`/members/${teamId}`}>
+          <Link className='text-blue-500 underline' href={`/profile/${teamId}`}>
             {name}
           </Link>
         </Button>

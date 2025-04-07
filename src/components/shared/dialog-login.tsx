@@ -7,6 +7,7 @@ import { EyeIcon, EyeOffIcon, LockIcon, MailIcon } from 'lucide-react';
 import { Button } from '~/components/ui/button';
 import { toast } from 'sonner';
 import { authClient } from '~/server/auth/client';
+import { Spinner } from './spinner';
 
 import {
   Card,
@@ -121,8 +122,7 @@ export function DialogLogin({
                 </div>
               </div>
               <Button onClick={handleLogin} className='cursor-pointer'>
-                {isLoading && <PinWheelLoader />}
-                Get Started
+                {isLoading ? <Spinner /> : 'Login'}
               </Button>
             </div>
             <div className='relative my-4 flex items-center justify-center overflow-hidden'>

@@ -6,7 +6,6 @@ import { useRouter } from 'next/navigation';
 import { Button } from '~/components/ui/button';
 import { toast } from 'sonner';
 import { authClient } from '~/server/auth/client';
-import { PinWheelLoader } from '../ui/pinwheel';
 import { Spinner } from './spinner';
 
 import {
@@ -85,10 +84,13 @@ export function DialogRegister({
           toast.success('Successfully registered');
           handleLogin();
         },
-        onError: (err) => {
-          console.log('error', err);
-          toast.error('Failed to register');
+        onError: (err: any) => {
           setIsLoading(false);
+          if (err?.error?.code == 'USER_ALREADY_EXISTS') {
+            toast.error('User already exists');
+          } else {
+            toast.error('Failed to register');
+          }
         },
       },
     );

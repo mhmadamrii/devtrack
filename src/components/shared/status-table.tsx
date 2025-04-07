@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Badge } from '../ui/badge';
 import { toast } from 'sonner';
 import { Spinner } from '~/components/shared/spinner';
+
 import {
   ContextMenu,
   ContextMenuContent,
@@ -19,7 +20,6 @@ export function StatusTable({
   currentStatus: string;
   issueId: number;
 }) {
-  console.log('currentStatus', currentStatus);
   const router = useRouter();
   const { mutate: updateStatus, isPending } =
     api.issue.updateStatus.useMutation({
