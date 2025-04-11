@@ -66,7 +66,7 @@ export function DialogLogin({
         },
         onError: (err) => {
           console.log('error', err);
-          toast.error('Failed to register');
+          toast.error('Failed to login');
           setIsLoading(false);
         },
       },

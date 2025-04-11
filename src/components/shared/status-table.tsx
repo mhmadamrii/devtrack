@@ -21,11 +21,13 @@ export function StatusTable({
   issueId: number;
 }) {
   const router = useRouter();
+  const utils = api.useUtils();
   const { mutate: updateStatus, isPending } =
     api.issue.updateStatus.useMutation({
       onSuccess: () => {
         toast.success('Successfuly update status');
         router.refresh();
+        utils.issue.invalidate();
       },
     });
 

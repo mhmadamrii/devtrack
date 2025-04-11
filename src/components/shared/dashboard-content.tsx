@@ -1,19 +1,16 @@
 'use client';
 
-import Link from 'next/link';
+import PaginationTable from '../ui/pagination-table';
+
 import { useState } from 'react';
+import { AssigneeBy } from './assignee-by';
+import { api } from '~/trpc/react';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
 import { NewIssueDialog } from '~/components/shared/new-issue-dialog';
 import { getStatusColor } from '~/lib/utils';
-
-import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuTrigger,
-} from '~/components/ui/context-menu';
+import { StatusTable } from './status-table';
 
 import {
   CheckCircle,
@@ -47,9 +44,7 @@ import {
   TableHeader,
   TableRow,
 } from '~/components/ui/table';
-import PaginationTable from '../ui/pagination-table';
 
-// Sample data
 const projects = [
   {
     id: '1',
@@ -69,84 +64,34 @@ const projects = [
   },
 ];
 
-const issues = [
-  {
-    id: '1',
-    title: 'Login page not responsive',
-    dateAssigned: '2023-04-01',
-    assignedTo: 'John Doe',
-    assignedBy: 'John',
-    status: 'In Progress',
-    priority: 'Medium',
-    project: '1',
-  },
-  {
-    id: '2',
-    title: 'API endpoint returns 500 error',
-    dateAssigned: '2023-04-02',
-    assignedTo: 'Jane Smith',
-    assignedBy: 'John',
-    status: 'Open',
-    priority: 'Critical',
-    project: '3',
-  },
-  {
-    id: '3',
-    title: 'Missing validation on form submission',
-    dateAssigned: '2023-04-03',
-    assignedTo: 'Mike Johnson',
-    assignedBy: 'John',
-    status: 'Resolved',
-    priority: 'Low',
-    project: '1',
-  },
-  {
-    id: '4',
-    title: 'Performance issues on dashboard',
-    dateAssigned: '2023-04-04',
-    assignedTo: 'Sarah Williams',
-    assignedBy: 'John',
-    status: 'In Progress',
-    priority: 'High',
-    project: '2',
-  },
-  {
-    id: '5',
-    title: 'Database connection timeout',
-    dateAssigned: '2023-04-05',
-    assignedTo: 'John Doe',
-    assignedBy: 'John',
-    status: 'Open',
-    priority: 'Critical',
-    project: '4',
-  },
-];
-
 export function DashboardContent() {
   const [selectedProject, setSelectedProject] = useState<string>('all');
+  const { data: issues, isLoading } = api.issue.getAllIssues.useQuery();
+  const totalIssues = issues?.length;
 
   const filteredIssues =
     selectedProject === 'all'
       ? issues
-      : issues.filter((issue) => issue.project === selectedProject);
+      : issues?.filter((issue) => issue.projectName === selectedProject);
 
-  const resolvedIssues = issues.filter(
-    (issue) => issue.status === 'Resolved',
+  const resolvedIssues = issues?.filter(
+    (issue) => issue.status === 'closed',
   ).length;
-  const unresolvedIssues = issues.filter(
-    (issue) => issue.status !== 'Resolved',
-  ).length;
-  const totalIssues = issues.length;
 
-  const getPriorityColor = (priority: string) => {
+  const unresolvedIssues = issues?.filter(
+    (issue) => issue.status !== 'closed',
+  ).length;
+
+  const getPriorityColor = (priority: string): string => {
+    console.log('priority', priority);
     switch (priority) {
-      case 'Critical':
+      case 'high':
         return 'bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-950/50';
-      case 'High':
+      case 'high_':
         return 'bg-orange-100 text-orange-800 dark:bg-orange-950/50 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-950/50';
-      case 'Medium':
+      case 'medium':
         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950/50 dark:text-yellow-300 hover:bg-yellow-100 dark:hover:bg-yellow-950/50';
-      case 'Low':
+      case 'low':
         return 'bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-950/50';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800';
@@ -247,20 +192,18 @@ export function DashboardContent() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredIssues.map((issue) => (
+                {filteredIssues?.map((issue) => (
                   <TableRow key={issue.id}>
-                    <TableCell className='font-medium'>{issue.title}</TableCell>
+                    <TableCell className='font-medium'>{issue.name}</TableCell>
                     <TableCell>
-                      {new Date(issue.dateAssigned).toLocaleDateString()}
+                      {new Date(issue.createdAt).toLocaleDateString()}
                     </TableCell>
                     <TableCell>{issue.assignedTo}</TableCell>
                     <TableCell>
-                      <Link
-                        className='underline text-blue-500'
-                        href={`/users/${issue.assignedBy}`}
-                      >
-                        {issue.assignedBy}
-                      </Link>
+                      <AssigneeBy
+                        teamId={issue.assignedTo ?? 0}
+                        name={issue.assigneeName ?? ''}
+                      />
                     </TableCell>
                     <TableCell>
                       <Badge
@@ -271,25 +214,10 @@ export function DashboardContent() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <ContextMenu>
-                        <ContextMenuTrigger>
-                          <Badge
-                            variant='outline'
-                            className={
-                              getStatusColor(issue.status) +
-                              'rounded-4xl flex w-full justify-center items-center cursor-pointer'
-                            }
-                          >
-                            {issue.status}
-                          </Badge>
-                        </ContextMenuTrigger>
-                        <ContextMenuContent>
-                          <ContextMenuItem>Open</ContextMenuItem>
-                          <ContextMenuItem>In Progress</ContextMenuItem>
-                          <ContextMenuItem>Resolved</ContextMenuItem>
-                          <ContextMenuItem>Pending</ContextMenuItem>
-                        </ContextMenuContent>
-                      </ContextMenu>
+                      <StatusTable
+                        issueId={issue.id}
+                        currentStatus={issue.status}
+                      />
                     </TableCell>
                     <TableCell className='text-right'>
                       <DropdownMenu>

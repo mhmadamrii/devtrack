@@ -27,7 +27,6 @@ import {
 
 async function IssuesCard() {
   const issues = await api.issue.getAllIssues();
-  console.log('issues', issues);
 
   const getPriorityColor = (priority: string) => {
     console.log('priority', priority);

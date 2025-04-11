@@ -155,35 +155,32 @@ export default async function ProfileId({
   const id = await params;
 
   return (
-    <div className='flex min-h-screen flex-col'>
-      <Navbar />
-      <main className='flex-1 p-4 md:p-6 lg:p-8'>
-        <div className='flex flex-col gap-6 max-w-4xl mx-auto'>
-          <Breadcrumb className='mb-2'>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbLink
-                  className='w-[70px] flex items-center gap-2'
-                  href='/'
-                >
-                  <Home className='h-4 w-4 mr-1' />
-                  Home
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbSeparator>
-                <ChevronRight className='h-4 w-4' />
-              </BreadcrumbSeparator>
-              <BreadcrumbItem>
-                <BreadcrumbPage>Team Member Profile</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
+    <main className='flex-1 p-4 md:p-6 lg:p-8'>
+      <div className='flex flex-col gap-6 max-w-4xl mx-auto'>
+        <Breadcrumb className='mb-2'>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink
+                className='w-[70px] flex items-center gap-2'
+                href='/'
+              >
+                <Home className='h-4 w-4 mr-1' />
+                Home
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator>
+              <ChevronRight className='h-4 w-4' />
+            </BreadcrumbSeparator>
+            <BreadcrumbItem>
+              <BreadcrumbPage>Team Member Profile</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
 
-          <Suspense fallback={<ProfileSkeleton />}>
-            <TeamMemberProfile teamId={id.id} />
-          </Suspense>
-        </div>
-      </main>
-    </div>
+        <Suspense fallback={<ProfileSkeleton />}>
+          <TeamMemberProfile teamId={id.id} />
+        </Suspense>
+      </div>
+    </main>
   );
 }
