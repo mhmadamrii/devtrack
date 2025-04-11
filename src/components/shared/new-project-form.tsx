@@ -98,6 +98,7 @@ export function NewProjectForm() {
     api.project.create.useMutation({
       onSuccess: async () => {
         toast.success('Successfully created project 🚀');
+        router.refresh();
         router.push('/projects');
         await new Promise((res) => setTimeout(res, 2000));
         toast.success('Good luck! 💪');
