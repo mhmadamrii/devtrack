@@ -90,7 +90,7 @@ export const projectRouter = createTRPCRouter({
         description: z.string().min(1),
         status: z.enum(['planning', 'in_progress', 'completed', 'pending']),
         progress: z.number().default(0),
-        dueDate: z.date().optional(),
+        dueDate: z.number().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -112,7 +112,7 @@ export const projectRouter = createTRPCRouter({
         description: z.string().min(1),
         status: z.enum(['planning', 'in_progress', 'completed', 'pending']),
         progress: z.number().default(0),
-        dueDate: z.date().optional(),
+        dueDate: z.number().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {

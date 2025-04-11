@@ -11,6 +11,7 @@ import { Badge } from '~/components/ui/badge';
 import { NewIssueDialog } from '~/components/shared/new-issue-dialog';
 import { getStatusColor } from '~/lib/utils';
 import { StatusTable } from './status-table';
+import { TableSkeleton } from '../skeletons/table-skeleton';
 
 import {
   CheckCircle,
@@ -192,6 +193,7 @@ export function DashboardContent() {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {isLoading && <TableSkeleton />}
                 {filteredIssues?.map((issue) => (
                   <TableRow key={issue.id}>
                     <TableCell className='font-medium'>{issue.name}</TableCell>

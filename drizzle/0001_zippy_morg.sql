@@ -1,0 +1,1 @@
+ALTER TABLE "project" ADD COLUMN "fucking" integer DEFAULT 0;

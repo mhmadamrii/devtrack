@@ -1,6 +1,6 @@
 {
-  "id": "e77bdcfe-4700-4ece-a485-98c108a68c45",
-  "prevId": "431b6ea5-a193-4f2e-918f-6a966cbb3116",
+  "id": "24b21db5-c715-44a1-a5c3-08224db8a16f",
+  "prevId": "e77bdcfe-4700-4ece-a485-98c108a68c45",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -396,8 +396,8 @@
           "notNull": false,
           "default": 0
         },
-        "fucking": {
-          "name": "fucking",
+        "due_date": {
+          "name": "due_date",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,

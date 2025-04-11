@@ -112,7 +112,7 @@ export const projects = pgTable(
     description: text('description'),
     status: projectStatusEnum('status').default('planning').notNull(),
     progress: integer('progress').default(0), // 0-100 percentage
-    dueDate: timestamp('due_date', { withTimezone: true }),
+    dueDate: integer('due_date').default(0),
     createdAt: timestamp('created_at', { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),

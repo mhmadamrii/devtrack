@@ -1,6 +1,6 @@
 {
-  "id": "e77bdcfe-4700-4ece-a485-98c108a68c45",
-  "prevId": "431b6ea5-a193-4f2e-918f-6a966cbb3116",
+  "id": "431b6ea5-a193-4f2e-918f-6a966cbb3116",
+  "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -391,13 +391,6 @@
         },
         "progress": {
           "name": "progress",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "default": 0
-        },
-        "fucking": {
-          "name": "fucking",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,

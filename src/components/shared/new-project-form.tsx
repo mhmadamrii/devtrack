@@ -2,7 +2,7 @@
 
 import * as z from 'zod';
 
-import { PinWheelLoader } from '../ui/pinwheel';
+import { Spinner } from './spinner';
 import { Label } from '../ui/label';
 import { Calendar } from '~/components/ui/calendar';
 import { cn } from '~/lib/utils';
@@ -121,7 +121,10 @@ export function NewProjectForm() {
   });
 
   function onSubmit(data: FormValues) {
-    console.log('Form submitted:', data);
+    // @ts-expect-error
+    const diff = data.endDate - data.startDate;
+    const diffInDays = diff / (1000 * 60 * 60 * 24);
+    console.log('-> in days', diffInDays);
     createProject({
       name: data.name,
       description: data.description,
@@ -131,7 +134,7 @@ export function NewProjectForm() {
         | 'completed'
         | 'pending',
       progress: progress[0],
-      dueDate: data.endDate,
+      dueDate: diffInDays,
     });
   }
 
@@ -385,7 +388,7 @@ export function NewProjectForm() {
                 type='submit'
                 disabled={isSubmitting}
               >
-                {isSubmitting ? <PinWheelLoader /> : 'Create Project'}
+                {isSubmitting ? <Spinner /> : 'Create Project'}
               </Button>
             </div>
           </form>
