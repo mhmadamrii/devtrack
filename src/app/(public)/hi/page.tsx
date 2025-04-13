@@ -21,11 +21,11 @@ import 'swiper/css/effect-coverflow';
 const menuItems = [
   {
     name: 'Features',
-    href: '#',
+    href: '/features',
   },
   {
     name: 'Solution',
-    href: '#',
+    href: '/solution',
   },
   {
     name: 'Pricing',
@@ -33,7 +33,7 @@ const menuItems = [
   },
   {
     name: 'About',
-    href: '#',
+    href: '/about',
   },
 ];
 
