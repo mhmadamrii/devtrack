@@ -106,7 +106,9 @@ async function ProjectCards() {
       <CardFooter className='border-t pt-4 flex justify-between'>
         <div className='flex items-center gap-1'>
           <Users className='h-4 w-4 text-muted-foreground' />
-          <span className='text-sm'>1 members</span>
+          <span className='text-sm'>
+            {project?.teamMembers?.length} members
+          </span>
         </div>
         <div className='text-sm'>
           <span>12 issues</span>

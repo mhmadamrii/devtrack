@@ -84,7 +84,6 @@ export function DashboardContent() {
   ).length;
 
   const getPriorityColor = (priority: string): string => {
-    console.log('priority', priority);
     switch (priority) {
       case 'high':
         return 'bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-950/50';

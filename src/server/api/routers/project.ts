@@ -10,10 +10,34 @@ import {
 
 export const projectRouter = createTRPCRouter({
   getAllProjects: publicProcedure.query(async ({ ctx }) => {
-    return await ctx.db
+    const allProjects = await ctx.db
       .select()
       .from(projects)
       .orderBy(desc(projects.createdAt));
+
+    const projectsWithTeamMembers = await Promise.all(
+      allProjects.map(async (project) => {
+        const teamMembers = await ctx.db
+          .select({
+            teamId: teams.id,
+            teamName: teams.name,
+            teamEmail: teams.email,
+            teamRole: teams.role,
+            teamDepartment: teams.department,
+            projectRole: projectMembers.role,
+          })
+          .from(projectMembers)
+          .innerJoin(teams, eq(projectMembers.teamId, teams.id))
+          .where(eq(projectMembers.projectId, project.id));
+
+        return {
+          ...project,
+          teamMembers,
+        };
+      }),
+    );
+
+    return projectsWithTeamMembers;
   }),
   getProjectById: publicProcedure
     .input(
