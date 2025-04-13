@@ -26,6 +26,7 @@ import {
 
 async function ProjectCards() {
   const projects = await api.project.getAllProjects();
+  console.log('projects', projects);
 
   const getStatusColor = (status: string) => {
     switch (status) {

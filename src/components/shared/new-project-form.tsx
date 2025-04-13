@@ -95,7 +95,7 @@ export function NewProjectForm() {
   const memoizedProgress = useMemo(() => progress, [progress]);
 
   const { mutate: createProject, isPending: isSubmitting } =
-    api.project.create.useMutation({
+    api.project.createProjectWithTeamMembers.useMutation({
       onSuccess: async () => {
         toast.success('Successfully created project 🚀');
         router.refresh();
@@ -125,7 +125,6 @@ export function NewProjectForm() {
     // @ts-expect-error
     const diff = data.endDate - data.startDate;
     const diffInDays = diff / (1000 * 60 * 60 * 24);
-    console.log('-> in days', diffInDays);
     createProject({
       name: data.name,
       description: data.description,
@@ -136,6 +135,7 @@ export function NewProjectForm() {
         | 'pending',
       progress: progress[0],
       dueDate: diffInDays,
+      teamMembers: data.teamMembers,
     });
   }
 

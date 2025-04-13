@@ -10,7 +10,10 @@ import {
 
 export const projectRouter = createTRPCRouter({
   getAllProjects: publicProcedure.query(async ({ ctx }) => {
-    return await ctx.db.select().from(projects);
+    return await ctx.db
+      .select()
+      .from(projects)
+      .orderBy(desc(projects.createdAt));
   }),
   getProjectById: publicProcedure
     .input(
@@ -32,7 +35,6 @@ export const projectRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      // Get the project details
       const project = await ctx.db
         .select()
         .from(projects)
@@ -43,7 +45,6 @@ export const projectRouter = createTRPCRouter({
         throw new Error('Project not found');
       }
 
-      // Get the project issues
       const projectIssues = await ctx.db
         .select({
           id: issues.id,
@@ -128,6 +129,50 @@ export const projectRouter = createTRPCRouter({
         .returning({ id: projects.id });
 
       return result[0];
+    }),
+
+  createProjectWithTeamMembers: protectedProcedure
+    .input(
+      z.object({
+        name: z.string().min(1),
+        description: z.string().min(1),
+        status: z.enum(['planning', 'in_progress', 'completed', 'pending']),
+        progress: z.number().default(0),
+        dueDate: z.number().optional(),
+        teamMembers: z.array(z.number().min(1)),
+        role: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.transaction(async (tx) => {
+        // Create the project
+        const [project] = await tx
+          .insert(projects)
+          .values({
+            name: input.name,
+            description: input.description,
+            status: input.status,
+            progress: input.progress,
+            dueDate: input.dueDate,
+          })
+          .returning({ id: projects.id });
+
+        if (!project?.id) {
+          throw new Error('Failed to create project');
+        }
+
+        // Prepare projectMembers rows
+        const projectMembersToInsert = input.teamMembers.map((teamId) => ({
+          projectId: project.id,
+          teamId,
+          createdAt: new Date(),
+        }));
+
+        // Batch insert all team members
+        await tx.insert(projectMembers).values(projectMembersToInsert);
+
+        return { projectId: project.id };
+      });
     }),
 
   addTeamMember: protectedProcedure
