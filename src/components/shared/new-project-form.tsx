@@ -56,8 +56,8 @@ const statuses = [
     label: 'In Progress',
   },
   {
-    value: 'on_hold',
-    label: 'On Hold',
+    value: 'pending',
+    label: 'Pending',
   },
   {
     value: 'completed',
