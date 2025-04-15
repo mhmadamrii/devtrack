@@ -11,7 +11,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import { Avatar, AvatarFallback } from '~/components/ui/avatar';
 import { NewIssueDialog } from '../shared/new-issue-dialog';
 import { AddTeamMemberDialog } from '../shared/add-team-member-dialog';
-import { getStatusColor } from '~/lib/utils';
 
 import {
   Calendar,
@@ -108,7 +107,7 @@ const projects = [
       {
         id: '2',
         user: 'Mike Johnson',
-        action: 'changed the project deadline',
+        action: 'changed the projectDetails deadline',
         time: '3 days ago',
       },
       {
@@ -120,7 +119,7 @@ const projects = [
       {
         id: '4',
         user: 'Robert Wilson',
-        action: 'was assigned to the project',
+        action: 'was assigned to the projectDetails',
         time: '1 week ago',
       },
       {
@@ -253,7 +252,7 @@ const projects = [
     id: '4',
     name: 'Database Migration',
     description:
-      'Migrate from SQL to NoSQL database to improve scalability and performance. This project involves data mapping, migration strategy development, testing, and deployment.',
+      'Migrate from SQL to NoSQL database to improve scalability and performance. This projectDetails involves data mapping, migration strategy development, testing, and deployment.',
     startDate: '2023-05-01',
     endDate: '2023-07-15',
     progress: 20,
@@ -288,11 +287,44 @@ const projects = [
       {
         id: '3',
         user: 'Mike Johnson',
-        action: 'updated the project timeline',
+        action: 'updated the projectDetails timeline',
         time: '1 week ago',
       },
     ],
     status: 'Planning',
+  },
+];
+
+const dummyActivities = [
+  {
+    id: '1',
+    user: 'Jane Smith',
+    action: 'updated the design mockups',
+    time: '2 days ago',
+  },
+  {
+    id: '2',
+    user: 'Mike Johnson',
+    action: 'changed the projectDetails deadline',
+    time: '3 days ago',
+  },
+  {
+    id: '3',
+    user: 'John Doe',
+    action: 'resolved issue #3',
+    time: '5 days ago',
+  },
+  {
+    id: '4',
+    user: 'Robert Wilson',
+    action: 'was assigned to the projectDetails',
+    time: '1 week ago',
+  },
+  {
+    id: '5',
+    user: 'Jane Smith',
+    action: 'created a new issue',
+    time: '1 week ago',
   },
 ];
 
@@ -307,23 +339,20 @@ export function ProjectDetails({
 }: ProjectDetailsProps) {
   const [activeTab, setActiveTab] = useState('overview');
 
-  const project = projects.find((p) => p.id === projectId);
-
-  if (!project) {
-    return (
-      <div className='flex flex-col items-center justify-center py-12'>
-        <AlertCircle className='h-12 w-12 text-muted-foreground mb-4' />
-        <h2 className='text-2xl font-bold mb-2'>Project Not Found</h2>
-        <p className='text-muted-foreground mb-6'>
-          The project you're looking for doesn't exist or has been removed.
-        </p>
-        <Button asChild>
-          <Link href='/projects'>Back to Projects</Link>
-        </Button>
-      </div>
-    );
-  }
-
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Planning':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-950/50 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-950/50';
+      case 'In Progress':
+        return 'bg-purple-100 text-purple-800 dark:bg-purple-950/50 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-950/50';
+      case 'Completed':
+        return 'bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-950/50';
+      case 'Pending':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950/50 dark:text-yellow-300 hover:bg-yellow-100 dark:hover:bg-yellow-950/50';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800';
+    }
+  };
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'Critical':
@@ -368,18 +397,19 @@ export function ProjectDetails({
               variant='outline'
               className={getStatusColor(projectDetails.status as string)}
             >
-              {project.status}
+              {projectDetails.status}
             </Badge>
+            {projectDetails.status}
           </div>
           <p className='text-muted-foreground mt-1'>
             <Calendar className='inline-block h-4 w-4 mr-1' />
-            {new Date(project.startDate).toLocaleDateString()} -{' '}
-            {new Date(project.endDate).toLocaleDateString()}
+            {new Date().toLocaleDateString()} -{' '}
+            {new Date().toLocaleDateString()}
           </p>
         </div>
         <div className='flex items-center gap-2'>
           <Button variant='outline' className='gap-2' asChild>
-            <Link href={`/projects/edit/${project.id}`}>
+            <Link href={`/projects/edit/${projectDetails.id}`}>
               <Edit className='h-4 w-4' />
               Edit Project
             </Link>
@@ -409,10 +439,10 @@ export function ProjectDetails({
         <TabsList>
           <TabsTrigger value='overview'>Overview</TabsTrigger>
           <TabsTrigger value='issues'>
-            Issues ({project.issues.length})
+            Issues ({projectDetails.issues.length})
           </TabsTrigger>
           <TabsTrigger value='team'>
-            Team ({project.members.length})
+            Team ({projectDetails.teamMembers.length})
           </TabsTrigger>
           <TabsTrigger value='activity'>Activity</TabsTrigger>
         </TabsList>
@@ -422,7 +452,7 @@ export function ProjectDetails({
             <CardHeader>
               <CardTitle>Project Overview</CardTitle>
               <CardDescription>
-                Key information and progress about this project
+                Key information and progress about this projectDetails
               </CardDescription>
             </CardHeader>
             <CardContent className='space-y-6'>
@@ -459,7 +489,7 @@ export function ProjectDetails({
                   <CardContent>
                     <div className='flex items-center justify-between'>
                       <div className='text-2xl font-bold'>
-                        {project.members.length}
+                        {projectDetails.teamMembers.length}
                       </div>
                       <Users className='h-6 w-6 text-muted-foreground' />
                     </div>
@@ -476,8 +506,8 @@ export function ProjectDetails({
                     <div className='flex items-center justify-between'>
                       <div className='text-2xl font-bold'>
                         {
-                          project.issues.filter(
-                            (issue) => issue.status !== 'Resolved',
+                          projectDetails.issues.filter(
+                            (issue) => issue.status !== 'closed',
                           ).length
                         }
                       </div>
@@ -496,8 +526,8 @@ export function ProjectDetails({
                     <div className='flex items-center justify-between'>
                       <div className='text-2xl font-bold'>
                         {
-                          project.issues.filter(
-                            (issue) => issue.status === 'Resolved',
+                          projectDetails.issues.filter(
+                            (issue) => issue.status === 'closed',
                           ).length
                         }
                       </div>
@@ -512,23 +542,23 @@ export function ProjectDetails({
                   Recent Team Members
                 </h3>
                 <div className='flex flex-wrap gap-3'>
-                  {project.members.slice(0, 4).map((member) => (
+                  {projectDetails.teamMembers.slice(0, 4).map((member) => (
                     <div
-                      key={member.id}
+                      key={member.teamId}
                       className='flex items-center gap-2 p-2 border rounded-md'
                     >
                       <Avatar className='h-8 w-8'>
-                        <AvatarFallback>{member.avatar}</AvatarFallback>
+                        <AvatarFallback>MM</AvatarFallback>
                       </Avatar>
                       <div>
-                        <div className='font-medium'>{member.name}</div>
+                        <div className='font-medium'>{member.teamName}</div>
                         <div className='text-xs text-muted-foreground'>
-                          {member.role}
+                          {member.teamRole}
                         </div>
                       </div>
                     </div>
                   ))}
-                  {project.members.length > 4 && (
+                  {projectDetails.teamMembers.length > 4 && (
                     <Button
                       variant='outline'
                       size='sm'
@@ -544,13 +574,13 @@ export function ProjectDetails({
               <div>
                 <h3 className='text-lg font-medium mb-4'>Recent Issues</h3>
                 <div className='space-y-3'>
-                  {project.issues.slice(0, 3).map((issue) => (
+                  {projectDetails.issues.slice(0, 3).map((issue) => (
                     <div
                       key={issue.id}
                       className='flex items-center justify-between p-3 border rounded-md'
                     >
                       <div className='flex flex-col'>
-                        <div className='font-medium'>{issue.title}</div>
+                        <div className='font-medium'>{issue.name}</div>
                         <div className='text-xs text-muted-foreground'>
                           Assigned to {issue.assignedTo}
                         </div>
@@ -571,7 +601,7 @@ export function ProjectDetails({
                       </div>
                     </div>
                   ))}
-                  {project.issues.length > 3 && (
+                  {projectDetails.issues.length > 3 && (
                     <Button
                       variant='outline'
                       size='sm'
@@ -611,14 +641,14 @@ export function ProjectDetails({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {project.issues.length > 0 ? (
-                    project.issues.map((issue) => (
+                  {projectDetails.issues.length > 0 ? (
+                    projectDetails.issues.map((issue) => (
                       <TableRow key={issue.id}>
                         <TableCell className='font-medium'>
-                          {issue.title}
+                          {issue.name}
                         </TableCell>
                         <TableCell>
-                          {new Date(issue.dateAssigned).toLocaleDateString()}
+                          {new Date(issue.createdAt).toLocaleDateString()}
                         </TableCell>
                         <TableCell>{issue.assignedTo}</TableCell>
                         <TableCell>
@@ -651,7 +681,7 @@ export function ProjectDetails({
                         colSpan={6}
                         className='text-center py-6 text-muted-foreground'
                       >
-                        No issues found for this project.
+                        No issues found for this projectDetails.
                       </TableCell>
                     </TableRow>
                   )}
@@ -667,7 +697,7 @@ export function ProjectDetails({
             <AddTeamMemberDialog
               projectId={parseInt(projectId)}
               onSuccess={() => {
-                // Refresh the project data
+                // Refresh the projectDetails data
                 window.location.reload();
               }}
             />
@@ -751,13 +781,14 @@ export function ProjectDetails({
                   No Team Members Yet
                 </h3>
                 <p className='text-muted-foreground mb-4'>
-                  This project doesn't have any team members assigned yet.
+                  This projectDetails doesn't have any team members assigned
+                  yet.
                 </p>
                 <AddTeamMemberDialog
                   projectId={parseInt(projectId)}
                   variant='outline'
                   onSuccess={() => {
-                    // Refresh the project data
+                    // Refresh the projectDetails data
                     window.location.reload();
                   }}
                 />
@@ -778,14 +809,14 @@ export function ProjectDetails({
                 Recent Activities
               </CardTitle>
               <CardDescription>
-                Recent actions and updates on this project
+                Recent actions and updates on this projectDetails
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className='space-y-6'>
-                {project.activities.map((activity, index) => (
+                {dummyActivities.map((activity, index) => (
                   <div key={activity.id} className='relative pl-6'>
-                    {index < project.activities.length - 1 && (
+                    {index < dummyActivities.length - 1 && (
                       <div className='absolute top-6 bottom-0 left-[9px] w-[2px] bg-muted' />
                     )}
                     <div className='absolute top-1 left-0 w-5 h-5 rounded-full bg-muted flex items-center justify-center'>

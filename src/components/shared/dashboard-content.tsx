@@ -86,9 +86,7 @@ export function DashboardContent() {
   const getPriorityColor = (priority: string): string => {
     switch (priority) {
       case 'high':
-        return 'bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300 hover:bg-red-100 dark:hover:bg-red-950/50';
-      case 'high_':
-        return 'bg-orange-100 text-orange-800 dark:bg-orange-950/50 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-950/50';
+        return 'bg-red-100 text-red-500 dark:bg-red-950/50 dark:text-red-500 hover:bg-red-100 dark:hover:bg-red-950/50';
       case 'medium':
         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950/50 dark:text-yellow-300 hover:bg-yellow-100 dark:hover:bg-yellow-950/50';
       case 'low':

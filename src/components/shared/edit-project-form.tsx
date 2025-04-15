@@ -21,6 +21,7 @@ import { Card, CardContent } from '~/components/ui/card';
 import { SliderWithHoverLabel } from '../ui/slider-with-hover-label';
 import { api } from '~/trpc/react';
 import { toast } from 'sonner';
+import { Spinner } from './spinner';
 
 import {
   Form,
@@ -90,8 +91,8 @@ const statuses = [
     label: 'In Progress',
   },
   {
-    value: 'on_hold',
-    label: 'On Hold',
+    value: 'pending',
+    label: 'Pending',
   },
   {
     value: 'completed',
@@ -170,8 +171,9 @@ export function EditProjectForm({
   });
 
   function onSubmit(data: FormValues) {
-    console.log('initial project', initialProject);
-    console.log('data', data);
+    // @ts-expect-error
+    const diff = data.endDate - data.startDate;
+    const diffInDays = diff / (1000 * 60 * 60 * 24);
     editProject({
       projectId: initialProject?.id as number,
       name: data.name,
@@ -182,7 +184,7 @@ export function EditProjectForm({
         | 'completed'
         | 'pending',
       progress: progress[0],
-      dueDate: data.endDate,
+      dueDate: diffInDays,
     });
   }
 
@@ -449,7 +451,7 @@ export function EditProjectForm({
                 type='submit'
                 disabled={isSubmitting}
               >
-                {isSubmitting ? <PinWheelLoader /> : 'Edit Project'}
+                {isSubmitting ? <Spinner /> : 'Edit Project'}
               </Button>
             </div>
           </form>

@@ -1,11 +1,11 @@
 import Link from 'next/link';
 
 import { Suspense } from 'react';
-import { Calendar, MoreHorizontal, Plus, Search, Users } from 'lucide-react';
+import { Calendar, MoreHorizontal, Users } from 'lucide-react';
+import { ProjectFilter } from '../filters/project-filter';
 import { api } from '~/trpc/server';
 import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
-import { Input } from '~/components/ui/input';
 import { Progress } from '~/components/ui/progress';
 import { getLabelStatus } from '~/lib/utils';
 
@@ -26,7 +26,6 @@ import {
 
 async function ProjectCards() {
   const projects = await api.project.getAllProjects();
-  console.log('projects', projects);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -36,15 +35,13 @@ async function ProjectCards() {
         return 'bg-purple-100 text-purple-800 dark:bg-purple-950/50 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-950/50';
       case 'closed':
         return 'bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-950/50';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950/50 dark:text-yellow-300 hover:bg-yellow-100 dark:hover:bg-yellow-950/50';
+      case 'completed':
+        return 'bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-950/50';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800';
     }
-  };
-
-  const getProgressColor = (progress: number) => {
-    if (progress < 30) return 'bg-red-500';
-    if (progress < 70) return 'bg-yellow-500';
-    return 'bg-green-500';
   };
 
   return projects.map((project) => (
@@ -84,10 +81,6 @@ async function ProjectCards() {
             <span>Progress</span>
             <span className='font-medium'>{project.progress}%</span>
           </div>
-          {/* <Progress
-            value={project.progress}
-            className={getProgressColor(project.progress as number)}
-          /> */}
           <Progress
             value={project.progress}
             className='w-full [&>div]:bg-gradient-to-r [&>div]:from-cyan-400 [&>div]:via-sky-500 [&>div]:to-indigo-500 [&>div]:rounded-l-full'
@@ -122,26 +115,7 @@ export function ProjectsContent() {
   return (
     <main className='flex-1 p-4 md:p-6 lg:p-8'>
       <div className='flex flex-col gap-6'>
-        <div className='flex items-center justify-between'>
-          <h1 className='text-3xl font-bold'>Projects</h1>
-          <Button asChild>
-            <Link className='cursor-pointer' href='/projects/new'>
-              <Plus className='mr-2 h-4 w-4' />
-              New Project
-            </Link>
-          </Button>
-        </div>
-
-        <div className='flex items-center gap-4'>
-          <div className='relative flex-1 max-w-md'>
-            <Search className='absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground' />
-            <Input
-              type='search'
-              placeholder='Search projects...'
-              className='pl-8'
-            />
-          </div>
-        </div>
+        <ProjectFilter />
 
         <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
           <Suspense fallback={<div>Loading...</div>}>
