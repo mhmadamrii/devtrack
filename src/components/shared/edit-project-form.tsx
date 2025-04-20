@@ -2,7 +2,6 @@
 
 import * as z from 'zod';
 
-import { PinWheelLoader } from '../ui/pinwheel';
 import { Label } from '../ui/label';
 import { Calendar } from '~/components/ui/calendar';
 import { cn } from '~/lib/utils';
@@ -47,40 +46,6 @@ import {
   PopoverTrigger,
 } from '~/components/ui/popover';
 
-// Sample data
-const members = [
-  {
-    id: '1',
-    name: 'John Doe',
-    role: 'Developer',
-  },
-  {
-    id: '2',
-    name: 'Jane Smith',
-    role: 'Designer',
-  },
-  {
-    id: '3',
-    name: 'Mike Johnson',
-    role: 'Project Manager',
-  },
-  {
-    id: '4',
-    name: 'Sarah Williams',
-    role: 'QA Engineer',
-  },
-  {
-    id: '5',
-    name: 'David Brown',
-    role: 'DevOps Engineer',
-  },
-  {
-    id: '6',
-    name: 'Emily Davis',
-    role: 'Backend Developer',
-  },
-];
-
 const statuses = [
   {
     value: 'planning',
@@ -116,7 +81,7 @@ const formSchema = z
       .string({ required_error: 'Please select a status' })
       .min(1, { message: 'Status must be filled' }),
     teamMembers: z
-      .array(z.string())
+      .array(z.number())
       .min(1, { message: 'Select at least one team member' }),
   })
   .refine((data) => data.endDate >= data.startDate, {
@@ -133,9 +98,17 @@ type Project =
       description: string | null;
       status: 'planning' | 'in_progress' | 'completed' | 'pending';
       progress: number | null;
-      dueDate: Date | null;
+      dueDate: number | null;
       createdAt: Date;
       updatedAt: Date;
+      teamMembers: {
+        teamId: number;
+        teamName: string;
+        teamEmail: string;
+        teamRole: string;
+        teamDepartment: string | null;
+        projectRole: string | null;
+      }[];
     }
   | undefined;
 
@@ -150,8 +123,8 @@ export function EditProjectForm({
 
   const { mutate: editProject, isPending: isSubmitting } =
     api.project.editProject.useMutation({
-      onSuccess: async () => {
-        toast.success('Successfully edit project 🚀');
+      onSuccess: async (data) => {
+        toast.success('Successfully edited project 🚀');
         router.push('/projects');
       },
       onError: (error) => {
@@ -159,6 +132,8 @@ export function EditProjectForm({
         toast.error('Failed to edit project');
       },
     });
+
+  const { data: teamData } = api.team.getAllTeams.useQuery();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -174,6 +149,7 @@ export function EditProjectForm({
     // @ts-expect-error
     const diff = data.endDate - data.startDate;
     const diffInDays = diff / (1000 * 60 * 60 * 24);
+
     editProject({
       projectId: initialProject?.id as number,
       name: data.name,
@@ -184,7 +160,8 @@ export function EditProjectForm({
         | 'completed'
         | 'pending',
       progress: progress[0],
-      dueDate: diffInDays,
+      dueDate: Math.round(diffInDays),
+      teamMembers: data.teamMembers,
     });
   }
 
@@ -193,10 +170,14 @@ export function EditProjectForm({
       form.setValue('name', initialProject.name);
       form.setValue('description', initialProject.description ?? '');
       form.setValue('status', initialProject.status.toString());
+      form.setValue('startDate', initialProject.createdAt);
+      form.setValue(
+        'teamMembers',
+        initialProject.teamMembers.map((member) => member.teamId),
+      );
       setProgress([initialProject.progress ?? 0]);
     }
   }, [initialProject]);
-  console.log(form.getValues('status'));
 
   return (
     <Card className='border-border'>
@@ -276,7 +257,7 @@ export function EditProjectForm({
                           mode='single'
                           selected={field.value}
                           onSelect={field.onChange}
-                          initialFocus
+                          // initialFocus prop is deprecated
                         />
                       </PopoverContent>
                     </Popover>
@@ -316,7 +297,7 @@ export function EditProjectForm({
                           mode='single'
                           selected={field.value}
                           onSelect={field.onChange}
-                          initialFocus
+                          // initialFocus prop is deprecated
                         />
                       </PopoverContent>
                     </Popover>
@@ -366,7 +347,6 @@ export function EditProjectForm({
                 onProgressChange={setProgress}
               />
             </div>
-
             <FormField
               control={form.control}
               name='teamMembers'
@@ -379,7 +359,7 @@ export function EditProjectForm({
                     </FormDescription>
                   </div>
                   <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                    {members.map((member) => (
+                    {teamData?.map((member) => (
                       <FormField
                         key={member.id}
                         control={form.control}
@@ -395,6 +375,7 @@ export function EditProjectForm({
                                   disabled={isSubmitting}
                                   checked={field.value?.includes(member.id)}
                                   onCheckedChange={(checked) => {
+                                    console.log('checked', checked);
                                     return checked
                                       ? field.onChange([
                                           ...field.value,
@@ -436,7 +417,6 @@ export function EditProjectForm({
                 </FormItem>
               )}
             />
-
             <div className='flex justify-end gap-4 pt-4'>
               <Button
                 className='cursor-pointer'
