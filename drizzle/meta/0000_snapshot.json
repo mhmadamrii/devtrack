@@ -1,5 +1,5 @@
 {
-  "id": "431b6ea5-a193-4f2e-918f-6a966cbb3116",
+  "id": "a80f1c06-3217-4c9b-8472-c742d58e3262",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -93,8 +93,12 @@
           "name": "account_user_id_user_id_fk",
           "tableFrom": "account",
           "tableTo": "user",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -222,8 +226,12 @@
           "name": "issue_project_id_project_id_fk",
           "tableFrom": "issue",
           "tableTo": "project",
-          "columnsFrom": ["project_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "project_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -231,8 +239,12 @@
           "name": "issue_assigned_to_team_id_fk",
           "tableFrom": "issue",
           "tableTo": "team",
-          "columnsFrom": ["assigned_to"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "assigned_to"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -310,8 +322,12 @@
           "name": "project_member_project_id_project_id_fk",
           "tableFrom": "project_member",
           "tableTo": "project",
-          "columnsFrom": ["project_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "project_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -319,8 +335,12 @@
           "name": "project_member_team_id_team_id_fk",
           "tableFrom": "project_member",
           "tableTo": "team",
-          "columnsFrom": ["team_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "team_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -328,7 +348,10 @@
       "compositePrimaryKeys": {
         "project_member_project_id_team_id_pk": {
           "name": "project_member_project_id_team_id_pk",
-          "columns": ["project_id", "team_id"]
+          "columns": [
+            "project_id",
+            "team_id"
+          ]
         }
       },
       "uniqueConstraints": {},
@@ -368,6 +391,13 @@
         },
         "progress": {
           "name": "progress",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "default": 0
+        },
+        "due_date": {
+          "name": "due_date",
           "type": "integer",
           "primaryKey": false,
           "notNull": false,
@@ -492,8 +522,12 @@
           "name": "session_user_id_user_id_fk",
           "tableFrom": "session",
           "tableTo": "user",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -503,7 +537,9 @@
         "session_token_unique": {
           "name": "session_token_unique",
           "nullsNotDistinct": false,
-          "columns": ["token"]
+          "columns": [
+            "token"
+          ]
         }
       },
       "policies": {},
@@ -691,7 +727,9 @@
         "user_email_unique": {
           "name": "user_email_unique",
           "nullsNotDistinct": false,
-          "columns": ["email"]
+          "columns": [
+            "email"
+          ]
         }
       },
       "policies": {},
@@ -752,17 +790,30 @@
     "public.issue_priority": {
       "name": "issue_priority",
       "schema": "public",
-      "values": ["low", "medium", "high"]
+      "values": [
+        "low",
+        "medium",
+        "high"
+      ]
     },
     "public.issue_status": {
       "name": "issue_status",
       "schema": "public",
-      "values": ["open", "in_progress", "closed"]
+      "values": [
+        "open",
+        "in_progress",
+        "closed"
+      ]
     },
     "public.project_status": {
       "name": "project_status",
       "schema": "public",
-      "values": ["planning", "in_progress", "completed", "pending"]
+      "values": [
+        "planning",
+        "in_progress",
+        "completed",
+        "pending"
+      ]
     },
     "public.team_role": {
       "name": "team_role",

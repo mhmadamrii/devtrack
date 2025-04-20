@@ -1,1 +1,0 @@
-ALTER TABLE "project" ADD COLUMN "due_date" integer DEFAULT 0;--> statement-breakpoint

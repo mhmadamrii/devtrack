@@ -12,6 +12,7 @@ export const userRouter = createTRPCRouter({
   updateOnboardingStatus: protectedProcedure
     .input(
       z.object({
+        name: z.string().min(1),
         onboarded: z.boolean(),
       }),
     )
@@ -23,10 +24,11 @@ export const userRouter = createTRPCRouter({
 
       const userId = ctx.session.user.id;
 
-      // Update the user's onboarded status
       await ctx.db
         .update(user)
         .set({
+          name: input.name,
+          emailVerified: true,
           onboarded: input.onboarded,
           updatedAt: new Date(),
         })

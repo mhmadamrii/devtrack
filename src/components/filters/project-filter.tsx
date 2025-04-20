@@ -8,7 +8,7 @@ import { Plus, Search } from 'lucide-react';
 import { useQueryState } from 'nuqs';
 
 export function ProjectFilter() {
-  const [searchTerm, setSearchTerm] = useQueryState('🤔');
+  const [searchTerm, setSearchTerm] = useQueryState('q');
   return (
     <>
       <div className='flex items-center justify-between'>
