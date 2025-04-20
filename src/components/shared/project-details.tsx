@@ -51,250 +51,6 @@ import {
   TableRow,
 } from '~/components/ui/table';
 
-const projects = [
-  {
-    id: '1',
-    name: 'Website Redesign',
-    description:
-      'Redesign the company website with modern UI/UX principles. The new design should be responsive, accessible, and align with our updated brand guidelines. Key objectives include improving user engagement, reducing bounce rates, and increasing conversion rates.',
-    startDate: '2023-03-15',
-    endDate: '2023-06-30',
-    progress: 65,
-    members: [
-      { id: '1', name: 'John Doe', role: 'Frontend Developer', avatar: 'JD' },
-      { id: '2', name: 'Jane Smith', role: 'UI/UX Designer', avatar: 'JS' },
-      { id: '3', name: 'Mike Johnson', role: 'Project Manager', avatar: 'MJ' },
-      {
-        id: '7',
-        name: 'Robert Wilson',
-        role: 'Frontend Developer',
-        avatar: 'RW',
-      },
-    ],
-    issues: [
-      {
-        id: '1',
-        title: 'Login page not responsive',
-        dateAssigned: '2023-04-01',
-        assignedTo: 'John Doe',
-        status: 'In Progress',
-        priority: 'Medium',
-      },
-      {
-        id: '3',
-        title: 'Missing validation on form submission',
-        dateAssigned: '2023-04-03',
-        assignedTo: 'Mike Johnson',
-        status: 'Resolved',
-        priority: 'Low',
-      },
-      {
-        id: '7',
-        title: 'Payment gateway integration issue',
-        dateAssigned: '2023-04-07',
-        assignedTo: 'Mike Johnson',
-        status: 'In Progress',
-        priority: 'High',
-      },
-    ],
-    activities: [
-      {
-        id: '1',
-        user: 'Jane Smith',
-        action: 'updated the design mockups',
-        time: '2 days ago',
-      },
-      {
-        id: '2',
-        user: 'Mike Johnson',
-        action: 'changed the projectDetails deadline',
-        time: '3 days ago',
-      },
-      {
-        id: '3',
-        user: 'John Doe',
-        action: 'resolved issue #3',
-        time: '5 days ago',
-      },
-      {
-        id: '4',
-        user: 'Robert Wilson',
-        action: 'was assigned to the projectDetails',
-        time: '1 week ago',
-      },
-      {
-        id: '5',
-        user: 'Jane Smith',
-        action: 'created a new issue',
-        time: '1 week ago',
-      },
-    ],
-    status: 'In Progress',
-  },
-  {
-    id: '2',
-    name: 'Mobile App Development',
-    description:
-      'Develop a cross-platform mobile application for iOS and Android. The app will provide users with access to our core services, real-time notifications, and a personalized dashboard. We aim to deliver a seamless and intuitive user experience across all devices.',
-    startDate: '2023-02-01',
-    endDate: '2023-08-15',
-    progress: 40,
-    members: [
-      { id: '2', name: 'Jane Smith', role: 'UI/UX Designer', avatar: 'JS' },
-      { id: '4', name: 'Sarah Williams', role: 'QA Engineer', avatar: 'SW' },
-      { id: '6', name: 'Emily Davis', role: 'Backend Developer', avatar: 'ED' },
-      {
-        id: '7',
-        name: 'Robert Wilson',
-        role: 'Frontend Developer',
-        avatar: 'RW',
-      },
-    ],
-    issues: [
-      {
-        id: '4',
-        title: 'Performance issues on dashboard',
-        dateAssigned: '2023-04-04',
-        assignedTo: 'Sarah Williams',
-        status: 'In Progress',
-        priority: 'High',
-      },
-      {
-        id: '6',
-        title: 'User profile image upload fails',
-        dateAssigned: '2023-04-06',
-        assignedTo: 'Jane Smith',
-        status: 'Open',
-        priority: 'Medium',
-      },
-    ],
-    activities: [
-      {
-        id: '1',
-        user: 'Emily Davis',
-        action: 'implemented user authentication',
-        time: '1 day ago',
-      },
-      {
-        id: '2',
-        user: 'Sarah Williams',
-        action: 'reported a new bug',
-        time: '3 days ago',
-      },
-      {
-        id: '3',
-        user: 'Robert Wilson',
-        action: 'updated the navigation component',
-        time: '4 days ago',
-      },
-      {
-        id: '4',
-        user: 'Jane Smith',
-        action: 'finalized the app icon design',
-        time: '1 week ago',
-      },
-    ],
-    status: 'In Progress',
-  },
-  {
-    id: '3',
-    name: 'API Integration',
-    description:
-      'Integrate third-party APIs into the platform to extend functionality and improve service offerings. This includes payment gateways, social media integrations, and data analytics services.',
-    startDate: '2023-04-10',
-    endDate: '2023-05-20',
-    progress: 85,
-    members: [
-      { id: '1', name: 'John Doe', role: 'Frontend Developer', avatar: 'JD' },
-      { id: '6', name: 'Emily Davis', role: 'Backend Developer', avatar: 'ED' },
-    ],
-    issues: [
-      {
-        id: '2',
-        title: 'API endpoint returns 500 error',
-        dateAssigned: '2023-04-02',
-        assignedTo: 'Jane Smith',
-        status: 'Open',
-        priority: 'Critical',
-      },
-      {
-        id: '8',
-        title: 'Search functionality not working',
-        dateAssigned: '2023-04-08',
-        assignedTo: 'Sarah Williams',
-        status: 'Resolved',
-        priority: 'Medium',
-      },
-    ],
-    activities: [
-      {
-        id: '1',
-        user: 'Emily Davis',
-        action: 'implemented the payment gateway API',
-        time: '2 days ago',
-      },
-      {
-        id: '2',
-        user: 'John Doe',
-        action: 'fixed the authentication token issue',
-        time: '4 days ago',
-      },
-      {
-        id: '3',
-        user: 'Emily Davis',
-        action: 'updated API documentation',
-        time: '1 week ago',
-      },
-    ],
-    status: 'In Progress',
-  },
-  {
-    id: '4',
-    name: 'Database Migration',
-    description:
-      'Migrate from SQL to NoSQL database to improve scalability and performance. This projectDetails involves data mapping, migration strategy development, testing, and deployment.',
-    startDate: '2023-05-01',
-    endDate: '2023-07-15',
-    progress: 20,
-    members: [
-      { id: '3', name: 'Mike Johnson', role: 'Project Manager', avatar: 'MJ' },
-      { id: '5', name: 'David Brown', role: 'DevOps Engineer', avatar: 'DB' },
-      { id: '6', name: 'Emily Davis', role: 'Backend Developer', avatar: 'ED' },
-    ],
-    issues: [
-      {
-        id: '5',
-        title: 'Database connection timeout',
-        dateAssigned: '2023-04-05',
-        assignedTo: 'John Doe',
-        status: 'Open',
-        priority: 'Critical',
-      },
-    ],
-    activities: [
-      {
-        id: '1',
-        user: 'David Brown',
-        action: 'set up the new database cluster',
-        time: '3 days ago',
-      },
-      {
-        id: '2',
-        user: 'Emily Davis',
-        action: 'created data migration scripts',
-        time: '5 days ago',
-      },
-      {
-        id: '3',
-        user: 'Mike Johnson',
-        action: 'updated the projectDetails timeline',
-        time: '1 week ago',
-      },
-    ],
-    status: 'Planning',
-  },
-];
-
 const dummyActivities = [
   {
     id: '1',
@@ -341,13 +97,13 @@ export function ProjectDetails({
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Planning':
+      case 'planning':
         return 'bg-blue-100 text-blue-800 dark:bg-blue-950/50 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-950/50';
-      case 'In Progress':
+      case 'in_progress':
         return 'bg-purple-100 text-purple-800 dark:bg-purple-950/50 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-950/50';
-      case 'Completed':
+      case 'completed':
         return 'bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-950/50';
-      case 'Pending':
+      case 'pending':
         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950/50 dark:text-yellow-300 hover:bg-yellow-100 dark:hover:bg-yellow-950/50';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800';
@@ -399,7 +155,6 @@ export function ProjectDetails({
             >
               {projectDetails.status}
             </Badge>
-            {projectDetails.status}
           </div>
           <p className='text-muted-foreground mt-1'>
             <Calendar className='inline-block h-4 w-4 mr-1' />

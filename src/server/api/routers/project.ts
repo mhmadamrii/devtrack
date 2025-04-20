@@ -46,11 +46,27 @@ export const projectRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      return await ctx.db
+      const projectTeamMembers = await ctx.db
+        .select({
+          teamId: teams.id,
+          teamName: teams.name,
+          teamEmail: teams.email,
+          teamRole: teams.role,
+          teamDepartment: teams.department,
+          projectRole: projectMembers.role,
+        })
+        .from(projectMembers)
+        .innerJoin(teams, eq(projectMembers.teamId, teams.id))
+        .where(eq(projectMembers.projectId, input.projectId));
+      console.log('projectTeamMembers ->', projectTeamMembers);
+
+      const projectDetails = await ctx.db
         .select()
         .from(projects)
         .where(eq(projects.id, input.projectId))
         .limit(1);
+
+      return { ...projectDetails[0], teamMembers: projectTeamMembers };
     }),
   getDetailProjectById: publicProcedure
     .input(
@@ -116,19 +132,58 @@ export const projectRouter = createTRPCRouter({
         status: z.enum(['planning', 'in_progress', 'completed', 'pending']),
         progress: z.number().default(0),
         dueDate: z.number().optional(),
+        teamMembers: z.array(z.number().min(1)),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      await ctx.db
-        .update(projects)
-        .set({
-          name: input.name,
-          description: input.description,
-          status: input.status,
-          progress: input.progress,
-          dueDate: input.dueDate,
-        })
-        .where(eq(projects.id, input.projectId));
+      return await ctx.db.transaction(async (tx) => {
+        // 1. Update the project details
+        await tx
+          .update(projects)
+          .set({
+            name: input.name,
+            description: input.description,
+            status: input.status,
+            progress: input.progress,
+            dueDate: input.dueDate,
+          })
+          .where(eq(projects.id, input.projectId));
+
+        // 2. Remove all existing team members for this project
+        await tx
+          .delete(projectMembers)
+          .where(eq(projectMembers.projectId, input.projectId));
+
+        // 3. Add the new team members
+        if (input.teamMembers.length > 0) {
+          const projectMembersToInsert = input.teamMembers.map((teamId) => ({
+            projectId: input.projectId,
+            teamId,
+            createdAt: new Date(),
+          }));
+
+          await tx.insert(projectMembers).values(projectMembersToInsert);
+        }
+
+        // 4. Get the updated project with team members
+        const updatedTeamMembers = await tx
+          .select({
+            teamId: teams.id,
+            teamName: teams.name,
+            teamEmail: teams.email,
+            teamRole: teams.role,
+            teamDepartment: teams.department,
+            projectRole: projectMembers.role,
+          })
+          .from(projectMembers)
+          .innerJoin(teams, eq(projectMembers.teamId, teams.id))
+          .where(eq(projectMembers.projectId, input.projectId));
+
+        return {
+          projectId: input.projectId,
+          teamMembers: updatedTeamMembers,
+        };
+      });
     }),
   create: protectedProcedure
     .input(

@@ -39,7 +39,7 @@ async function ProjectWithData({ projectId }: { projectId: string }) {
       projectId: Number(projectId),
     });
 
-    if (!projectById || !projectById[0]) {
+    if (!projectById || !projectById) {
       return (
         <div className='p-8 text-center'>
           <h2 className='text-2xl font-bold mb-4'>Project Not Found</h2>
@@ -53,7 +53,7 @@ async function ProjectWithData({ projectId }: { projectId: string }) {
       );
     }
 
-    return <EditProjectForm initialProject={projectById[0]} />;
+    return <EditProjectForm initialProject={projectById} />;
   } catch (error) {
     console.error('Error fetching project for editing:', error);
     return (
