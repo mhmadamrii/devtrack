@@ -111,7 +111,13 @@ async function ProjectCards() {
   ));
 }
 
-export function ProjectsContent() {
+export async function ProjectsContent({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const query = (await searchParams)?.q;
+  console.log('query', query);
   return (
     <main className='flex-1 p-4 md:p-6 lg:p-8'>
       <div className='flex flex-col gap-6'>

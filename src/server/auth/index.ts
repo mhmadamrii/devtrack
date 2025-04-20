@@ -38,6 +38,9 @@ export const auth = betterAuth({
 export const getServerSession = cache(async () => {
   try {
     return await auth.api.getSession({
+      query: {
+        disableCookieCache: true,
+      },
       headers: await headers(),
     });
   } catch (e) {

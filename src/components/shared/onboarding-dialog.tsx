@@ -69,11 +69,15 @@ const purposeOptions = [
 
 interface OnboardingDialogProps {
   children?: React.ReactNode;
+  userEmail?: string;
 }
 
-export function OnboardingDialog({ children }: OnboardingDialogProps) {
+export function OnboardingDialog({
+  children,
+  userEmail,
+}: OnboardingDialogProps) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
 
@@ -81,7 +85,7 @@ export function OnboardingDialog({ children }: OnboardingDialogProps) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: 'John Doe',
-      email: 'john.doe~example.com',
+      email: userEmail || '',
       company: '',
       purpose: '',
       additionalInfo: '',
@@ -92,14 +96,7 @@ export function OnboardingDialog({ children }: OnboardingDialogProps) {
     onSuccess: () => {
       toast.success('Profile completed!');
       setIsCompleted(true);
-
-      // Close dialog after showing success message
-      setTimeout(() => {
-        setOpen(false);
-        setIsCompleted(false);
-        form.reset();
-        router.refresh(); // Refresh the page to update the session
-      }, 2000);
+      router.refresh();
     },
     onError: (error) => {
       toast.error(error.message || 'Failed to complete profile');
@@ -109,12 +106,9 @@ export function OnboardingDialog({ children }: OnboardingDialogProps) {
 
   function onSubmit(data: FormValues) {
     setIsSubmitting(true);
-
-    // Save the form data and update onboarded status
     console.log('Form submitted:', data);
 
-    // Update the onboarded status in the database
-    updateOnboarding.mutate({ onboarded: true });
+    updateOnboarding.mutate({ onboarded: true, name: data.name });
   }
 
   return (
