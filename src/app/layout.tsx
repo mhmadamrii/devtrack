@@ -64,7 +64,6 @@ const geist = Geist({
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const user = 'mhmadamrii';
   return (
     <html lang='en' className={`${geist.variable}`} suppressHydrationWarning>
       <body>

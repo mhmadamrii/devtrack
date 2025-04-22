@@ -2,11 +2,7 @@ import { z } from 'zod';
 import { user } from '~/server/db/schema';
 import { eq } from 'drizzle-orm';
 
-import {
-  createTRPCRouter,
-  protectedProcedure,
-  publicProcedure,
-} from '~/server/api/trpc';
+import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
 
 export const userRouter = createTRPCRouter({
   updateOnboardingStatus: protectedProcedure
@@ -14,6 +10,8 @@ export const userRouter = createTRPCRouter({
       z.object({
         name: z.string().min(1),
         onboarded: z.boolean(),
+        role: z.string().min(1),
+        company: z.string().min(1),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -30,7 +28,9 @@ export const userRouter = createTRPCRouter({
           name: input.name,
           emailVerified: true,
           onboarded: input.onboarded,
+          role: input.role,
           updatedAt: new Date(),
+          companyName: input.company,
         })
         .where(eq(user.id, userId));
 

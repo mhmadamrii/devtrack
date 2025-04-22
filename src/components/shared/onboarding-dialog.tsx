@@ -53,18 +53,80 @@ const formSchema = z.object({
     .min(2, { message: 'Company name must be at least 2 characters' })
     .max(100),
   purpose: z.string({ required_error: 'Please select a purpose' }),
+  role: z.string({ required_error: 'Please select your role' }),
   additionalInfo: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
 const purposeOptions = [
-  { value: 'project_management', label: 'Project Management' },
-  { value: 'issue_tracking', label: 'Issue Tracking' },
-  { value: 'team_collaboration', label: 'Team Collaboration' },
-  { value: 'resource_planning', label: 'Resource Planning' },
-  { value: 'client_management', label: 'Client Management' },
-  { value: 'other', label: 'Other' },
+  {
+    value: 'project_management',
+    label: 'Project Management',
+  },
+  {
+    value: 'issue_tracking',
+    label: 'Issue Tracking',
+  },
+  {
+    value: 'team_collaboration',
+    label: 'Team Collaboration',
+  },
+  {
+    value: 'resource_planning',
+    label: 'Resource Planning',
+  },
+  {
+    value: 'client_management',
+    label: 'Client Management',
+  },
+  {
+    value: 'other',
+    label: 'Other',
+  },
+];
+
+const roleOptions = [
+  {
+    value: 'developer',
+    label: 'Developer',
+  },
+  {
+    value: 'designer',
+    label: 'Designer',
+  },
+  {
+    value: 'qa_engineer',
+    label: 'QA Engineer',
+  },
+  {
+    value: 'project_manager',
+    label: 'Project Manager',
+  },
+  {
+    value: 'frontend_developer',
+    label: 'Frontend Developer',
+  },
+  {
+    value: 'backend_developer',
+    label: 'Backend Developer',
+  },
+  {
+    value: 'fullstack_developer',
+    label: 'Fullstack Developer',
+  },
+  {
+    value: 'mobile_developer',
+    label: 'Mobile Developer',
+  },
+  {
+    value: 'devops_engineer',
+    label: 'DevOps Engineer',
+  },
+  {
+    value: 'other',
+    label: 'Other',
+  },
 ];
 
 interface OnboardingDialogProps {
@@ -78,7 +140,6 @@ export function OnboardingDialog({
 }: OnboardingDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCompleted, setIsCompleted] = useState(false);
 
   const form = useForm<FormValues>({
@@ -92,27 +153,31 @@ export function OnboardingDialog({
     },
   });
 
-  const updateOnboarding = api.user.updateOnboardingStatus.useMutation({
-    onSuccess: () => {
-      toast.success('Profile completed!');
-      setIsCompleted(true);
-      router.refresh();
-    },
-    onError: (error) => {
-      toast.error(error.message || 'Failed to complete profile');
-      setIsSubmitting(false);
-    },
-  });
+  const { mutate: updateOnboarding, isPending } =
+    api.user.updateOnboardingStatus.useMutation({
+      onSuccess: () => {
+        toast.success('Profile completed!');
+        setIsCompleted(true);
+        router.refresh();
+      },
+      onError: (error) => {
+        toast.error(error.message || 'Failed to complete profile');
+      },
+    });
 
   function onSubmit(data: FormValues) {
-    setIsSubmitting(true);
     console.log('Form submitted:', data);
 
-    updateOnboarding.mutate({ onboarded: true, name: data.name });
+    updateOnboarding({
+      onboarded: true,
+      name: data.name,
+      role: data.role,
+      company: data.company,
+    });
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={true} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className='sm:max-w-[800px]'>
         {!isCompleted ? (
@@ -192,6 +257,40 @@ export function OnboardingDialog({
                   <div className='flex-1 space-y-6'>
                     <FormField
                       control={form.control}
+                      name='role'
+                      render={({ field }) => (
+                        <FormItem className=''>
+                          <FormLabel>Your Role</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger className='w-full'>
+                                <SelectValue placeholder='Select your role' />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {roleOptions.map((option) => (
+                                <SelectItem
+                                  key={option.value}
+                                  value={option.value}
+                                >
+                                  {option.label}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormDescription>
+                            Select the role that best describes your position
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
                       name='purpose'
                       render={({ field }) => (
                         <FormItem>
@@ -255,11 +354,8 @@ export function OnboardingDialog({
                   >
                     Cancel
                   </Button>
-                  <Button
-                    type='submit'
-                    disabled={isSubmitting || updateOnboarding.isPending}
-                  >
-                    {isSubmitting || updateOnboarding.isPending ? (
+                  <Button type='submit' disabled={isPending}>
+                    {isPending ? (
                       <>
                         <Loader2 className='mr-2 h-4 w-4 animate-spin' />
                         Saving...
