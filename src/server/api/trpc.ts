@@ -141,3 +141,24 @@ export const protectedProcedure = t.procedure
       },
     });
   });
+
+/**
+ * project manager procedure
+ */
+
+export const projectManagerProcedure = t.procedure
+  .use(timingMiddleware)
+  .use(({ ctx, next }) => {
+    const { role } = ctx!.session!.user;
+    console.log('role', role === 'Project Manager');
+    if (role !== 'Project Manager' || !ctx.session?.user) {
+      throw new TRPCError({ code: 'UNAUTHORIZED' });
+    }
+
+    return next({
+      ctx: {
+        // infers the `session` as non-nullable
+        session: { ...ctx.session, user: ctx.session?.user },
+      },
+    });
+  });

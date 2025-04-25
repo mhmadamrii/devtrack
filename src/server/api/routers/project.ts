@@ -4,6 +4,7 @@ import { eq, desc, and } from 'drizzle-orm';
 
 import {
   createTRPCRouter,
+  projectManagerProcedure,
   protectedProcedure,
   publicProcedure,
 } from '~/server/api/trpc';
@@ -185,7 +186,7 @@ export const projectRouter = createTRPCRouter({
         };
       });
     }),
-  create: protectedProcedure
+  create: projectManagerProcedure
     .input(
       z.object({
         name: z.string().min(1),

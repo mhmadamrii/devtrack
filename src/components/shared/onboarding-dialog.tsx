@@ -177,7 +177,7 @@ export function OnboardingDialog({
   }
 
   return (
-    <Dialog open={true} onOpenChange={setOpen}>
+    <Dialog open onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className='sm:max-w-[800px]'>
         {!isCompleted ? (
