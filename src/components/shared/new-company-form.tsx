@@ -24,7 +24,13 @@ const formSchema = z.object({
   refferal: z.string().min(1).min(0).optional(),
 });
 
-export function NewCompanyForm({ onClose }: { onClose: () => void }) {
+export function NewCompanyForm({
+  onClose,
+  onRefetchCompany,
+}: {
+  onClose: () => void;
+  onRefetchCompany: () => void;
+}) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
@@ -32,6 +38,7 @@ export function NewCompanyForm({ onClose }: { onClose: () => void }) {
   const { mutate, isPending } = api.company.create.useMutation({
     onSuccess: () => {
       toast.success('Company created successfully');
+      onRefetchCompany();
       onClose();
     },
     onError: (error) => {

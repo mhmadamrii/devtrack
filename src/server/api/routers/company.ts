@@ -13,7 +13,7 @@ export const companyRouter = createTRPCRouter({
     const allCompanies = await ctx.db
       .select()
       .from(companies)
-      .orderBy(desc(projects.createdAt));
+      .orderBy(desc(companies.createdAt));
 
     return allCompanies;
   }),

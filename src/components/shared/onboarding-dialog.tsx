@@ -51,7 +51,7 @@ const formSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
   company: z
     .string()
-    .min(2, { message: 'Company name must be at least 2 characters' })
+    .min(1, { message: 'Company name must be at least 1 characters' })
     .max(100),
   purpose: z.string({ required_error: 'Please select a purpose' }),
   role: z.string({ required_error: 'Please select your role' }),
@@ -155,6 +155,13 @@ export function OnboardingDialog({
     },
   });
 
+  console.log('form', form.formState.errors);
+
+  const { data: companyList, refetch: getCompany } =
+    api.company.getAvailableCompanies.useQuery(undefined, {
+      enabled: false,
+    });
+
   const { mutate: updateOnboarding, isPending } =
     api.user.updateOnboardingStatus.useMutation({
       onSuccess: () => {
@@ -209,7 +216,10 @@ export function OnboardingDialog({
             </DialogHeader>
 
             {isCreateCompanyForm ? (
-              <NewCompanyForm onClose={() => setIsCreateCompanyForm(false)} />
+              <NewCompanyForm
+                onRefetchCompany={() => getCompany()}
+                onClose={() => setIsCreateCompanyForm(false)}
+              />
             ) : (
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className='pt-4'>
@@ -259,13 +269,18 @@ export function OnboardingDialog({
 
                       <FormField
                         control={form.control}
-                        name='role'
+                        name='company'
                         render={({ field }) => (
                           <FormItem className=''>
                             <FormLabel>Company Name</FormLabel>
                             <Select
                               onValueChange={field.onChange}
                               defaultValue={field.value}
+                              onOpenChange={(open) => {
+                                if (open && !companyList) {
+                                  getCompany();
+                                }
+                              }}
                             >
                               <FormControl>
                                 <SelectTrigger className='w-full'>
@@ -273,14 +288,20 @@ export function OnboardingDialog({
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                {roleOptions.map((option) => (
-                                  <SelectItem
-                                    key={option.value}
-                                    value={option.value}
-                                  >
-                                    {option.label}
+                                {companyList ? (
+                                  companyList.map((comp) => (
+                                    <SelectItem
+                                      key={comp.id}
+                                      value={comp.id.toString()}
+                                    >
+                                      {comp.name}
+                                    </SelectItem>
+                                  ))
+                                ) : (
+                                  <SelectItem disabled value='not_found'>
+                                    No projects found
                                   </SelectItem>
-                                ))}
+                                )}
                               </SelectContent>
                             </Select>
                             <FormDescription>

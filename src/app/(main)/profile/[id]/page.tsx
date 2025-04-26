@@ -1,7 +1,8 @@
 import { api } from '~/trpc/server';
-import { Navbar } from '~/components/shared/navbar';
 import { Suspense } from 'react';
 import { ProfileSkeleton } from '~/components/skeletons/profile-skeleton';
+import { getLabelStatus } from '~/lib/utils';
+import { Badge } from '~/components/ui/badge';
 
 import {
   ChevronRight,
@@ -42,6 +43,23 @@ async function TeamMemberProfile({ teamId }: { teamId: string }) {
   const teamMember = await api.team.getTeamById({
     teamId: Number(teamId),
   });
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'open':
+        return 'bg-blue-100 text-blue-800 dark:bg-blue-950/50 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-950/50';
+      case 'in_progress':
+        return 'bg-purple-100 text-purple-800 dark:bg-purple-950/50 dark:text-purple-300 hover:bg-purple-100 dark:hover:bg-purple-950/50';
+      case 'closed':
+        return 'bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-950/50';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-950/50 dark:text-yellow-300 hover:bg-yellow-100 dark:hover:bg-yellow-950/50';
+      case 'completed':
+        return 'bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-300 hover:bg-green-100 dark:hover:bg-green-950/50';
+      default:
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800';
+    }
+  };
 
   if (!teamMember || !teamMember[0]) {
     return <div className='p-4 text-center'>Team member not found</div>;
@@ -135,9 +153,12 @@ async function TeamMemberProfile({ teamId }: { teamId: string }) {
                 <span className='text-sm text-muted-foreground'>
                   ({issue.projectName})
                 </span>
-                <span className='text-xs px-2 py-1 rounded-full bg-gray-100'>
-                  {issue.status}
-                </span>
+                <Badge
+                  variant='outline'
+                  className={getStatusColor(issue.status)}
+                >
+                  {getLabelStatus(issue.status)}
+                </Badge>
               </div>
             ))}
           </div>
