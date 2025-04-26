@@ -211,7 +211,7 @@ export const projectRouter = createTRPCRouter({
       return result[0];
     }),
 
-  createProjectWithTeamMembers: protectedProcedure
+  createProjectWithTeamMembers: projectManagerProcedure
     .input(
       z.object({
         name: z.string().min(1),

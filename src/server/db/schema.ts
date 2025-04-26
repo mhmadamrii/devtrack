@@ -2,6 +2,7 @@ import { relations, sql } from 'drizzle-orm';
 
 import {
   index,
+  uuid,
   pgTableCreator,
   pgTable,
   text,
@@ -50,9 +51,9 @@ export const user = pgTable('user', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   email: text('email').notNull().unique(),
+  companyId: uuid('company_id'),
   emailVerified: boolean('email_verified').notNull(),
   onboarded: boolean('onboarded').default(false).notNull(),
-  companyName: text('company_name'),
   image: text('image'),
   createdAt: timestamp('created_at').notNull(),
   updatedAt: timestamp('updated_at').notNull(),
@@ -61,8 +62,6 @@ export const user = pgTable('user', {
   banReason: text('ban_reason'),
   banExpires: timestamp('ban_expires'),
 });
-
-// Relations will be defined after all tables
 
 export const session = pgTable('session', {
   id: text('id').primaryKey(),
@@ -180,6 +179,23 @@ export const teams = pgTable(
   ],
 );
 
+export const companies = pgTable(
+  'company',
+  {
+    id: uuid('uuid').primaryKey().defaultRandom(),
+    name: varchar('name', { length: 256 }).unique().notNull(),
+    isVerified: boolean('is_verified').default(false).notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true })
+      .default(sql`CURRENT_TIMESTAMP`)
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => [index('company_name_idx').on(t.name)],
+);
+
 // Junction table for many-to-many relationship between projects and teams
 export const projectMembers = pgTable(
   'project_member',
@@ -204,9 +220,13 @@ export const projectMembers = pgTable(
 
 // Define relations for better type safety and easier joins
 
-export const userRelations = relations(user, ({ many }) => ({
+export const userRelations = relations(user, ({ many, one }) => ({
   sessions: many(session),
   accounts: many(account),
+  company: one(companies, {
+    fields: [user.companyId],
+    references: [companies.id],
+  }),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -253,4 +273,10 @@ export const projectMemberRelations = relations(projectMembers, ({ one }) => ({
     fields: [projectMembers.teamId],
     references: [teams.id],
   }),
+}));
+
+export const companyRelations = relations(companies, ({ many }) => ({
+  users: many(user),
+  projects: many(projects),
+  teams: many(teams),
 }));

@@ -10,9 +10,10 @@ import { Input } from '~/components/ui/input';
 import { Textarea } from '~/components/ui/textarea';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CheckCircle2, Loader2 } from 'lucide-react';
+import { CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { api } from '~/trpc/react';
 import { toast } from 'sonner';
+import { NewCompanyForm } from './new-company-form';
 
 import {
   Dialog,
@@ -141,6 +142,7 @@ export function OnboardingDialog({
   const router = useRouter();
   const [open, setOpen] = useState(true);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [isCreateCompanyForm, setIsCreateCompanyForm] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -179,194 +181,231 @@ export function OnboardingDialog({
   return (
     <Dialog open onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className='sm:max-w-[800px]'>
+      <DialogContent className='w-full sm:max-w-[820px]'>
         {!isCompleted ? (
           <>
             <DialogHeader>
               <DialogTitle>Complete Your Profile</DialogTitle>
-              <DialogDescription>
-                Please provide some information to help us personalize your
-                experience.
+              <DialogDescription asChild>
+                <div className='flex items-center justify-between'>
+                  <div className='w-full'>
+                    Please provide some information to help us personalize your
+                    experience.
+                  </div>
+                  <div>
+                    <Button
+                      size='icon'
+                      variant='outline'
+                      className='cursor-pointer'
+                      onClick={() =>
+                        setIsCreateCompanyForm(!isCreateCompanyForm)
+                      }
+                    >
+                      {isCreateCompanyForm ? <ChevronLeft /> : <ChevronRight />}
+                    </Button>
+                  </div>
+                </div>
               </DialogDescription>
             </DialogHeader>
 
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className='pt-4'>
-                <div className='flex flex-col md:flex-row gap-6'>
-                  {/* Left column */}
-                  <div className='flex-1 space-y-6'>
-                    <FormField
-                      control={form.control}
-                      name='name'
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Full Name</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder='Enter your full name'
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+            {isCreateCompanyForm ? (
+              <NewCompanyForm onClose={() => setIsCreateCompanyForm(false)} />
+            ) : (
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className='pt-4'>
+                  <div className='flex flex-col md:flex-row gap-6'>
+                    <div className='flex-1 space-y-6'>
+                      <FormField
+                        control={form.control}
+                        name='name'
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Full Name</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder='Enter your full name'
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Provide your fullname
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                    <FormField
-                      control={form.control}
-                      name='email'
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email Address</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder='Enter your email'
-                              {...field}
-                              disabled
-                              className='bg-muted/50 cursor-not-allowed'
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            Your email address is associated with your account
-                            and cannot be changed.
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                      <FormField
+                        control={form.control}
+                        name='email'
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Email Address</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder='Enter your email'
+                                {...field}
+                                disabled
+                                className='bg-muted/50 cursor-not-allowed'
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Your email address is associated with your account
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                    <FormField
-                      control={form.control}
-                      name='company'
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Company Name</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder='Enter your company name'
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                      <FormField
+                        control={form.control}
+                        name='role'
+                        render={({ field }) => (
+                          <FormItem className=''>
+                            <FormLabel>Company Name</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger className='w-full'>
+                                  <SelectValue placeholder='Select your role' />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {roleOptions.map((option) => (
+                                  <SelectItem
+                                    key={option.value}
+                                    value={option.value}
+                                  >
+                                    {option.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              Select the role that best describes your position
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className='flex-1 space-y-6'>
+                      <FormField
+                        control={form.control}
+                        name='role'
+                        render={({ field }) => (
+                          <FormItem className=''>
+                            <FormLabel>Your Role</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger className='w-full'>
+                                  <SelectValue placeholder='Select your role' />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {roleOptions.map((option) => (
+                                  <SelectItem
+                                    key={option.value}
+                                    value={option.value}
+                                  >
+                                    {option.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              Select the role that best describes your position
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name='purpose'
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Primary Purpose</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger>
+                                  <SelectValue placeholder='Select your primary purpose for using DevTrack' />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {purposeOptions.map((option) => (
+                                  <SelectItem
+                                    key={option.value}
+                                    value={option.value}
+                                  >
+                                    {option.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              This helps us tailor the experience to your
+                              specific needs.
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name='additionalInfo'
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              Additional Information (Optional)
+                            </FormLabel>
+                            <FormControl>
+                              <Textarea
+                                placeholder='Tell us more about how you plan to use DevTrack'
+                                className='min-h-[140px]'
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
                   </div>
 
-                  {/* Right column */}
-                  <div className='flex-1 space-y-6'>
-                    <FormField
-                      control={form.control}
-                      name='role'
-                      render={({ field }) => (
-                        <FormItem className=''>
-                          <FormLabel>Your Role</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger className='w-full'>
-                                <SelectValue placeholder='Select your role' />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {roleOptions.map((option) => (
-                                <SelectItem
-                                  key={option.value}
-                                  value={option.value}
-                                >
-                                  {option.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormDescription>
-                            Select the role that best describes your position
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
+                  <DialogFooter className='mt-6'>
+                    <Button
+                      type='button'
+                      variant='outline'
+                      onClick={() => setOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button type='submit' disabled={isPending}>
+                      {isPending ? (
+                        <>
+                          <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                          Saving...
+                        </>
+                      ) : (
+                        'Save Profile'
                       )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name='purpose'
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Primary Purpose</FormLabel>
-                          <Select
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder='Select your primary purpose for using DevTrack' />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {purposeOptions.map((option) => (
-                                <SelectItem
-                                  key={option.value}
-                                  value={option.value}
-                                >
-                                  {option.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormDescription>
-                            This helps us tailor the experience to your specific
-                            needs.
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name='additionalInfo'
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Additional Information (Optional)
-                          </FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder='Tell us more about how you plan to use DevTrack'
-                              className='min-h-[140px]'
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                </div>
-
-                <DialogFooter className='mt-6'>
-                  <Button
-                    type='button'
-                    variant='outline'
-                    onClick={() => setOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type='submit' disabled={isPending}>
-                    {isPending ? (
-                      <>
-                        <Loader2 className='mr-2 h-4 w-4 animate-spin' />
-                        Saving...
-                      </>
-                    ) : (
-                      'Save Profile'
-                    )}
-                  </Button>
-                </DialogFooter>
-              </form>
-            </Form>
+                    </Button>
+                  </DialogFooter>
+                </form>
+              </Form>
+            )}
           </>
         ) : (
           <div className='flex flex-col items-center justify-center py-8 text-center'>

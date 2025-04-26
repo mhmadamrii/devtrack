@@ -9,7 +9,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
 import { NewIssueDialog } from '~/components/shared/new-issue-dialog';
-import { getStatusColor } from '~/lib/utils';
 import { StatusTable } from './status-table';
 import { TableSkeleton } from '../skeletons/table-skeleton';
 
