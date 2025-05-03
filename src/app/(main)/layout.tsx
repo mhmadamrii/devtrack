@@ -15,6 +15,7 @@ export default async function MainLayout({
   }
 
   console.log('session', session);
+
   return (
     <div className='flex min-h-screen scroll-smooth flex-col'>
       <Navbar />

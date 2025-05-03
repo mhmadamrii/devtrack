@@ -10,10 +10,17 @@ import { Input } from '~/components/ui/input';
 import { Textarea } from '~/components/ui/textarea';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { CheckCircle2, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { api } from '~/trpc/react';
 import { toast } from 'sonner';
 import { NewCompanyForm } from './new-company-form';
+
+import {
+  BadgeCheck,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+} from 'lucide-react';
 
 import {
   Dialog,
@@ -155,8 +162,6 @@ export function OnboardingDialog({
     },
   });
 
-  console.log('form', form.formState.errors);
-
   const { data: companyList, refetch: getCompany } =
     api.company.getAvailableCompanies.useQuery(undefined, {
       enabled: false,
@@ -175,13 +180,13 @@ export function OnboardingDialog({
     });
 
   function onSubmit(data: FormValues) {
-    console.log('Form submitted:', data);
+    console.log('data', data);
 
     updateOnboarding({
       onboarded: true,
       name: data.name,
       role: data.role,
-      company: data.company,
+      companyId: data.company,
     });
   }
 
@@ -291,21 +296,35 @@ export function OnboardingDialog({
                                 {companyList ? (
                                   companyList.map((comp) => (
                                     <SelectItem
+                                      className='flex justify-between items-center w-full'
                                       key={comp.id}
                                       value={comp.id.toString()}
                                     >
-                                      {comp.name}
+                                      <span className='w-full'>
+                                        {comp.name}
+                                      </span>
+                                      {comp.isVerified && (
+                                        <span>
+                                          <BadgeCheck className='text-blue-500' />
+                                        </span>
+                                      )}
                                     </SelectItem>
                                   ))
                                 ) : (
                                   <SelectItem disabled value='not_found'>
-                                    No projects found
+                                    No Company found
                                   </SelectItem>
                                 )}
                               </SelectContent>
                             </Select>
                             <FormDescription>
-                              Select the role that best describes your position
+                              Select your company, make{' '}
+                              <span
+                                onClick={() => setIsCreateCompanyForm(true)}
+                                className='text-blue-500 underline cursor-pointer'
+                              >
+                                one if doesn't exist{' '}
+                              </span>
                             </FormDescription>
                             <FormMessage />
                           </FormItem>

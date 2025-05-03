@@ -3,6 +3,11 @@
  * for Docker builds.
  */
 import './src/env.js';
+import createWithBundleAnalyzer from '@next/bundle-analyzer';
+
+const withBundleAnalyzer = createWithBundleAnalyzer({
+  enabled: process.env.ANALYZE === 'true',
+});
 
 const config = {
   experimental: {
@@ -19,4 +24,4 @@ const config = {
   },
 };
 
-export default config;
+export default withBundleAnalyzer(config);

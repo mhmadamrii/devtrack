@@ -11,7 +11,7 @@ export const userRouter = createTRPCRouter({
         name: z.string().min(1),
         onboarded: z.boolean(),
         role: z.string().min(1),
-        company: z.string().min(1),
+        companyId: z.string().min(1),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -30,7 +30,7 @@ export const userRouter = createTRPCRouter({
           onboarded: input.onboarded,
           role: input.role,
           updatedAt: new Date(),
-          companyName: input.company,
+          companyId: input.companyId,
         })
         .where(eq(user.id, userId));
 

@@ -33,6 +33,10 @@ export function NewCompanyForm({
 }) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+      company_name: '',
+      refferal: ''
+    }
   });
 
   const { mutate, isPending } = api.company.create.useMutation({
