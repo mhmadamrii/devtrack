@@ -1,9 +1,9 @@
-import { MoreHorizontal, Plus, Search, Mail, Phone } from 'lucide-react';
+import { MoreHorizontal, Plus, Mail, Phone } from 'lucide-react';
 import { Card, CardContent } from '~/components/ui/card';
 import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
-import { Input } from '~/components/ui/input';
 import { api } from '~/trpc/server';
+import { FilterMembers } from './filter-members';
 import { Suspense } from 'react';
 import { AddTeamDialog } from './new-team-dialog';
 import { TableSkeleton } from '../skeletons/table-skeleton';
@@ -24,8 +24,15 @@ import {
   TableRow,
 } from '~/components/ui/table';
 
-async function TableMembers() {
-  const allTeams = await api.team.getAllTeams();
+type Searches = {
+  source: string;
+};
+
+async function TableMembers({ source }: Searches) {
+  const allTeams = await api.team.getAllTeams({
+    source,
+  });
+  console.log('allteams', allTeams);
 
   const getStatusMemberColor = (status: string): string => {
     switch (status) {
@@ -40,7 +47,7 @@ async function TableMembers() {
     }
   };
 
-  return allTeams.map((member) => (
+  return allTeams.map((member: any) => (
     <TableRow key={member.id}>
       <TableCell>
         <div className='flex items-center gap-3'>
@@ -48,7 +55,7 @@ async function TableMembers() {
         </div>
       </TableCell>
       <TableCell>{member.role}</TableCell>
-      <TableCell>{member.department}</TableCell>
+      <TableCell>{member?.department ?? '-'}</TableCell>
       <TableCell>
         <Badge variant='outline' className={getStatusMemberColor('Active')}>
           Active
@@ -63,7 +70,7 @@ async function TableMembers() {
             </a>
           </Button>
           <Button variant='ghost' size='icon' asChild>
-            <a href={`tel:${member.phone}`}>
+            <a href={`tel:${member.phone ?? '-'}`}>
               <Phone className='h-4 w-4' />
               <span className='sr-only'>Call</span>
             </a>
@@ -90,7 +97,7 @@ async function TableMembers() {
   ));
 }
 
-export function TeamsContent() {
+export function TeamsContent({ source }: Searches) {
   return (
     <main className='flex-1 p-4 md:p-6 lg:p-8'>
       <div className='flex flex-col gap-6'>
@@ -103,17 +110,8 @@ export function TeamsContent() {
             </Button>
           </AddTeamDialog>
         </div>
-        <div className='flex items-center gap-4'>
-          <div className='relative flex-1 max-w-md'>
-            <Search className='absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground' />
-            <Input
-              type='search'
-              placeholder='Search members...'
-              className='pl-8'
-            />
-          </div>
-        </div>
-        <Card className='border-border min-h-[60vh]'>
+        <FilterMembers />
+        <Card className='border-border rounded-sm min-h-[60vh]'>
           <CardContent className='p-0'>
             <Table>
               <TableHeader>
@@ -128,7 +126,7 @@ export function TeamsContent() {
               </TableHeader>
               <TableBody>
                 <Suspense fallback={<TableSkeleton />}>
-                  <TableMembers />
+                  <TableMembers source={source} />
                 </Suspense>
               </TableBody>
             </Table>

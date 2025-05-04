@@ -1,21 +1,44 @@
 import { z } from 'zod';
-import { teams, issues, projectMembers, projects } from '~/server/db/schema';
+import {
+  teams,
+  issues,
+  projectMembers,
+  projects,
+  user,
+} from '~/server/db/schema';
 import { eq, desc, and } from 'drizzle-orm';
 import { TRPCError } from '@trpc/server';
-import {
-  createTRPCRouter,
-  protectedProcedure,
-  publicProcedure,
-  companyProcedure,
-} from '~/server/api/trpc';
+import { createTRPCRouter, companyProcedure } from '~/server/api/trpc';
 
 export const teamRouter = createTRPCRouter({
-  getAllTeams: companyProcedure.query(async ({ ctx }) => {
-    return await ctx.db
-      .select()
-      .from(teams)
-      .where(eq(teams.companyId, ctx.companyId));
-  }),
+  getAllTeams: companyProcedure
+    .input(
+      z.object({
+        source: z.string().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      console.log('should be searched', input.source == '');
+
+      if (input.source == '') {
+        const teamsData = await ctx.db
+          .select()
+          .from(teams)
+          .where(eq(teams.companyId, ctx.companyId));
+
+        const usersData = await ctx.db
+          .select()
+          .from(user)
+          .where(eq(user.companyId, ctx.companyId));
+
+        return [...teamsData, ...usersData];
+      } else {
+        return await ctx.db
+          .select()
+          .from(teams)
+          .where(eq(teams.companyId, ctx.companyId));
+      }
+    }),
   getTeamById: companyProcedure
     .input(
       z.object({

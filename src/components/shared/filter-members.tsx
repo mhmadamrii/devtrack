@@ -1,9 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '~/components/ui/card';
 import { Input } from '~/components/ui/input';
+import { useQueryState } from 'nuqs';
+
 import {
   Select,
   SelectContent,
@@ -32,7 +35,9 @@ const projects = [
   },
 ];
 
-export function FilterIssues() {
+export function FilterMembers() {
+  const router = useRouter();
+  const [source, setSource] = useQueryState('source', { defaultValue: 'all' });
   const [selectedProject, setSelectedProject] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -41,7 +46,7 @@ export function FilterIssues() {
   return (
     <Card className='border-border'>
       <CardHeader>
-        <CardTitle>Filter Issues</CardTitle>
+        <CardTitle>Filter Members</CardTitle>
       </CardHeader>
       <CardContent>
         <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
@@ -84,25 +89,29 @@ export function FilterIssues() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value='all'>All Statuses</SelectItem>
-                <SelectItem value='Open'>Open</SelectItem>
-                <SelectItem value='In Progress'>In Progress</SelectItem>
-                <SelectItem value='Resolved'>Resolved</SelectItem>
+                <SelectItem value='Open'>Active</SelectItem>
+                <SelectItem value='In Progress'>Inactive</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className='flex flex-col gap-2'>
-            <label className='text-sm font-medium'>Priority</label>
-            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+            <label className='text-sm font-medium'>Source</label>
+            <Select
+              value={source}
+              onValueChange={async (e) => {
+                setSource(e);
+                await new Promise((res) => setTimeout(res, 800));
+                router.refresh();
+              }}
+            >
               <SelectTrigger className='w-full'>
                 <SelectValue placeholder='Filter by priority' />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value='all'>All Priorities</SelectItem>
-                <SelectItem value='Critical'>Critical</SelectItem>
-                <SelectItem value='High'>High</SelectItem>
-                <SelectItem value='Medium'>Medium</SelectItem>
-                <SelectItem value='Low'>Low</SelectItem>
+                <SelectItem value='all'>All</SelectItem>
+                <SelectItem value='current_company'>Current Company</SelectItem>
+                <SelectItem value='others'>Add On</SelectItem>
               </SelectContent>
             </Select>
           </div>

@@ -45,8 +45,8 @@ async function IssuesCard() {
   };
 
   return (
-    <Card className='border-border'>
-      <CardContent className='p-0'>
+    <Card className='border-border rounded-sm'>
+      <CardContent className='p-0 min-h-[500px]'>
         <Table>
           <TableHeader>
             <TableRow>

@@ -2,7 +2,6 @@ import { is, relations, sql } from 'drizzle-orm';
 
 import {
   index,
-  uuid,
   pgTableCreator,
   pgTable,
   text,

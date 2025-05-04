@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import { Avatar, AvatarFallback } from '~/components/ui/avatar';
 import { NewIssueDialog } from '../shared/new-issue-dialog';
 import { AddTeamMemberDialog } from '../shared/add-team-member-dialog';
+import { getLabelStatus } from '~/lib/utils';
 
 import {
   Calendar,
@@ -148,7 +149,7 @@ export function ProjectDetails({
               variant='outline'
               className={getStatusColor(projectDetails.status as string)}
             >
-              {projectDetails.status}
+              {getLabelStatus(projectDetails.status ?? '')}
             </Badge>
           </div>
           <p className='text-muted-foreground mt-1'>

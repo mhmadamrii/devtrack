@@ -171,11 +171,11 @@ export function DashboardContent() {
           </Card>
         </div>
 
-        <Card className='border-border'>
+        <Card className='rounded-sm'>
           <CardHeader>
             <CardTitle>Recent Issues</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className='min-h-[500px]'>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -236,7 +236,6 @@ export function DashboardContent() {
                 ))}
               </TableBody>
             </Table>
-            <PaginationTable />
           </CardContent>
         </Card>
       </div>

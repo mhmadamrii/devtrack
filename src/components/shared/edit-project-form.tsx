@@ -108,7 +108,7 @@ export function EditProjectForm({ initialProject }: { initialProject: any }) {
       },
     });
 
-  const { data: teamData } = api.team.getAllTeams.useQuery();
+  const { data: teamData } = api.team.getAllTeams.useQuery({ source: '' });
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -348,7 +348,9 @@ export function EditProjectForm({ initialProject }: { initialProject: any }) {
                               <FormControl>
                                 <Checkbox
                                   disabled={isSubmitting}
-                                  checked={field.value?.includes(member.id)}
+                                  checked={field.value?.includes(
+                                    member.id as number,
+                                  )}
                                   onCheckedChange={(checked) => {
                                     console.log('checked', checked);
                                     return checked
