@@ -91,32 +91,7 @@ const formSchema = z
 
 type FormValues = z.infer<typeof formSchema>;
 
-type Project =
-  | {
-      id: number;
-      name: string;
-      description: string | null;
-      status: 'planning' | 'in_progress' | 'completed' | 'pending';
-      progress: number | null;
-      dueDate: number | null;
-      createdAt: Date;
-      updatedAt: Date;
-      teamMembers: {
-        teamId: number;
-        teamName: string;
-        teamEmail: string;
-        teamRole: string;
-        teamDepartment: string | null;
-        projectRole: string | null;
-      }[];
-    }
-  | undefined;
-
-export function EditProjectForm({
-  initialProject,
-}: {
-  initialProject: Project;
-}) {
+export function EditProjectForm({ initialProject }: { initialProject: any }) {
   const router = useRouter();
   const [progress, setProgress] = useState([10]);
   const memoizedProgress = useMemo(() => progress, [progress]);
@@ -173,7 +148,7 @@ export function EditProjectForm({
       form.setValue('startDate', initialProject.createdAt);
       form.setValue(
         'teamMembers',
-        initialProject.teamMembers.map((member) => member.teamId),
+        initialProject.teamMembers.map((member: any) => member.teamId),
       );
       setProgress([initialProject.progress ?? 0]);
     }

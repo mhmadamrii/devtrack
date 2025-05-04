@@ -1,17 +1,22 @@
 import { z } from 'zod';
 import { teams, issues, projectMembers, projects } from '~/server/db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, and } from 'drizzle-orm';
+import { TRPCError } from '@trpc/server';
 import {
   createTRPCRouter,
   protectedProcedure,
   publicProcedure,
+  companyProcedure,
 } from '~/server/api/trpc';
 
 export const teamRouter = createTRPCRouter({
-  getAllTeams: publicProcedure.query(async ({ ctx }) => {
-    return await ctx.db.select().from(teams);
+  getAllTeams: companyProcedure.query(async ({ ctx }) => {
+    return await ctx.db
+      .select()
+      .from(teams)
+      .where(eq(teams.companyId, ctx.companyId));
   }),
-  getTeamById: publicProcedure
+  getTeamById: companyProcedure
     .input(
       z.object({
         teamId: z.number(),
@@ -22,11 +27,16 @@ export const teamRouter = createTRPCRouter({
       const teamMember = await ctx.db
         .select()
         .from(teams)
-        .where(eq(teams.id, input.teamId))
+        .where(
+          and(eq(teams.id, input.teamId), eq(teams.companyId, ctx.companyId)),
+        )
         .limit(1);
 
       if (!teamMember.length) {
-        return [];
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Team member not found or you do not have access to it',
+        });
       }
 
       // Get the team member's projects
@@ -38,8 +48,13 @@ export const teamRouter = createTRPCRouter({
         })
         .from(projectMembers)
         .innerJoin(projects, eq(projectMembers.projectId, projects.id))
-        .where(eq(projectMembers.teamId, input.teamId))
-        .limit(3); // Limit to 3 most recent projects
+        .where(
+          and(
+            eq(projectMembers.teamId, input.teamId),
+            eq(projects.companyId, ctx.companyId),
+          ),
+        )
+        .limit(3);
 
       // Get the team member's assigned issues
       const assignedIssues = await ctx.db
@@ -53,11 +68,15 @@ export const teamRouter = createTRPCRouter({
         })
         .from(issues)
         .leftJoin(projects, eq(issues.projectId, projects.id))
-        .where(eq(issues.assignedTo, input.teamId))
+        .where(
+          and(
+            eq(issues.assignedTo, input.teamId),
+            eq(projects.companyId, ctx.companyId),
+          ),
+        )
         .orderBy(desc(issues.createdAt))
-        .limit(3); // Limit to 3 most recent issues
+        .limit(3);
 
-      // Return the team member with their projects and issues
       return [
         {
           ...teamMember[0],
@@ -66,7 +85,7 @@ export const teamRouter = createTRPCRouter({
         },
       ];
     }),
-  create: protectedProcedure
+  create: companyProcedure
     .input(
       z.object({
         name: z.string().min(1),
@@ -97,7 +116,7 @@ export const teamRouter = createTRPCRouter({
         phone: input.phone ?? null,
         role: input.role ?? 'Developer',
         department: input.department ?? null,
-        // status: input.status ?? 'Active', // add this later on
+        companyId: ctx.companyId,
       });
     }),
 });

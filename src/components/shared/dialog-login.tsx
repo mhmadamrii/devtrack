@@ -2,7 +2,6 @@ import { useState, type ChangeEvent } from 'react';
 import { useRouter } from 'nextjs-toploader/app';
 import { Input } from '~/components/ui/input';
 import { Separator } from '../ui/separator';
-import { PinWheelLoader } from '../ui/pinwheel';
 import { EyeIcon, EyeOffIcon, LockIcon, MailIcon } from 'lucide-react';
 import { Button } from '~/components/ui/button';
 import { toast } from 'sonner';
@@ -60,9 +59,12 @@ export function DialogLogin({
         password: credentials.password,
       },
       {
-        onSuccess: () => {
+        onSuccess: (res) => {
           console.log('pushing to dashboard');
-          router.push('/');
+          console.log(res);
+          if (res.data.token) {
+            router.push('/');
+          }
         },
         onError: (err) => {
           console.log('error', err);

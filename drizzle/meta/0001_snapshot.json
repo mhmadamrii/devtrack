@@ -1,6 +1,6 @@
 {
-  "id": "3d020b34-9bab-4002-adc7-d7e2237ba22a",
-  "prevId": "a80f1c06-3217-4c9b-8472-c742d58e3262",
+  "id": "530ba2ec-7c6d-450d-9ea8-ea3847aa0db4",
+  "prevId": "313d7973-93b5-4385-a13a-347db9ab306b",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -103,6 +103,74 @@
           "onUpdate": "no action"
         }
       },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.company": {
+      "name": "company",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "company_password": {
+          "name": "company_password",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_verified": {
+          "name": "is_verified",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "CURRENT_TIMESTAMP"
+        }
+      },
+      "indexes": {
+        "company_name_idx": {
+          "name": "company_name_idx",
+          "columns": [
+            {
+              "expression": "name",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -403,6 +471,12 @@
           "notNull": false,
           "default": 0
         },
+        "company_id": {
+          "name": "company_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -448,9 +522,38 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "project_company_idx": {
+          "name": "project_company_idx",
+          "columns": [
+            {
+              "expression": "company_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "project_company_id_company_id_fk": {
+          "name": "project_company_id_company_id_fk",
+          "tableFrom": "project",
+          "tableTo": "company",
+          "columnsFrom": [
+            "company_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -588,6 +691,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "company_id": {
+          "name": "company_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -633,9 +742,38 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
+        },
+        "team_company_idx": {
+          "name": "team_company_idx",
+          "columns": [
+            {
+              "expression": "company_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
         }
       },
-      "foreignKeys": {},
+      "foreignKeys": {
+        "team_company_id_company_id_fk": {
+          "name": "team_company_id_company_id_fk",
+          "tableFrom": "team",
+          "tableTo": "company",
+          "columnsFrom": [
+            "company_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -664,6 +802,12 @@
           "primaryKey": false,
           "notNull": true
         },
+        "company_id": {
+          "name": "company_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
         "email_verified": {
           "name": "email_verified",
           "type": "boolean",
@@ -676,12 +820,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": false
-        },
-        "company_name": {
-          "name": "company_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
         },
         "image": {
           "name": "image",
@@ -727,7 +865,21 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "user_company_id_company_id_fk": {
+          "name": "user_company_id_company_id_fk",
+          "tableFrom": "user",
+          "tableTo": "company",
+          "columnsFrom": [
+            "company_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "user_email_unique": {

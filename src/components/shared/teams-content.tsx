@@ -6,9 +6,7 @@ import { Input } from '~/components/ui/input';
 import { api } from '~/trpc/server';
 import { Suspense } from 'react';
 import { AddTeamDialog } from './new-team-dialog';
-import { Skeleton } from '../ui/skeleton';
 import { TableSkeleton } from '../skeletons/table-skeleton';
-import { Avatar, AvatarFallback } from '~/components/ui/avatar';
 
 import {
   DropdownMenu,
@@ -51,13 +49,6 @@ async function TableMembers() {
       </TableCell>
       <TableCell>{member.role}</TableCell>
       <TableCell>{member.department}</TableCell>
-      {/* <TableCell>
-        <div className='flex flex-wrap gap-1'>
-          <Badge variant='outline' className='bg-muted'>
-            Web Development
-          </Badge>
-        </div>
-      </TableCell> */}
       <TableCell>
         <Badge variant='outline' className={getStatusMemberColor('Active')}>
           Active
@@ -130,7 +121,6 @@ export function TeamsContent() {
                   <TableHead>Name</TableHead>
                   <TableHead>Role</TableHead>
                   <TableHead>Department</TableHead>
-                  {/* <TableHead>Projects</TableHead> */}
                   <TableHead>Status</TableHead>
                   <TableHead>Contact</TableHead>
                   <TableHead className='text-right'>Actions</TableHead>

@@ -1,4 +1,4 @@
-import { relations, sql } from 'drizzle-orm';
+import { is, relations, sql } from 'drizzle-orm';
 
 import {
   index,
@@ -51,7 +51,9 @@ export const user = pgTable('user', {
   id: text('id').primaryKey(),
   name: text('name').notNull(),
   email: text('email').notNull().unique(),
-  companyId: uuid('company_id'),
+  companyId: integer('company_id').references(() => companies.id, {
+    onDelete: 'set null',
+  }),
   emailVerified: boolean('email_verified').notNull(),
   onboarded: boolean('onboarded').default(false).notNull(),
   image: text('image'),
@@ -113,6 +115,9 @@ export const projects = pgTable(
     status: projectStatusEnum('status').default('planning').notNull(),
     progress: integer('progress').default(0), // 0-100 percentage
     dueDate: integer('due_date').default(0),
+    companyId: integer('company_id')
+      .notNull()
+      .references(() => companies.id, { onDelete: 'cascade' }),
     createdAt: timestamp('created_at', { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -124,6 +129,7 @@ export const projects = pgTable(
   (t) => [
     index('project_name_idx').on(t.name),
     index('project_status_idx').on(t.status),
+    index('project_company_idx').on(t.companyId),
   ],
 );
 
@@ -165,6 +171,9 @@ export const teams = pgTable(
     phone: varchar('phone', { length: 256 }),
     role: teamRolesEnum('role').default('Developer').notNull(),
     department: varchar('department', { length: 256 }),
+    companyId: integer('company_id')
+      .notNull()
+      .references(() => companies.id, { onDelete: 'cascade' }),
     createdAt: timestamp('created_at', { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -176,15 +185,17 @@ export const teams = pgTable(
   (t) => [
     index('team_name_idx').on(t.name),
     index('team_email_idx').on(t.email),
+    index('team_company_idx').on(t.companyId),
   ],
 );
 
 export const companies = pgTable(
   'company',
   {
-    id: uuid('uuid').primaryKey().defaultRandom(),
-    name: varchar('name', { length: 256 }).unique().notNull(),
-    isVerified: boolean('is_verified').default(false).notNull(),
+    id: serial('id').primaryKey(),
+    name: text('name').notNull(),
+    company_password: text('company_password').notNull(),
+    isVerified: boolean('is_verified').default(false),
     createdAt: timestamp('created_at', { withTimezone: true })
       .default(sql`CURRENT_TIMESTAMP`)
       .notNull(),
@@ -243,9 +254,13 @@ export const accountRelations = relations(account, ({ one }) => ({
   }),
 }));
 
-export const projectRelations = relations(projects, ({ many }) => ({
+export const projectRelations = relations(projects, ({ many, one }) => ({
   issues: many(issues),
   members: many(projectMembers),
+  company: one(companies, {
+    fields: [projects.companyId],
+    references: [companies.id],
+  }),
 }));
 
 export const issueRelations = relations(issues, ({ one }) => ({
@@ -259,8 +274,12 @@ export const issueRelations = relations(issues, ({ one }) => ({
   }),
 }));
 
-export const teamRelations = relations(teams, ({ many }) => ({
+export const teamRelations = relations(teams, ({ many, one }) => ({
   projects: many(projectMembers),
+  company: one(companies, {
+    fields: [teams.companyId],
+    references: [companies.id],
+  }),
   assignedIssues: many(issues, { relationName: 'assignee' }),
 }));
 

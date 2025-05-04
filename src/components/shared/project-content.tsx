@@ -84,6 +84,7 @@ async function ProjectCards() {
           <Progress
             value={project.progress}
             className='w-full [&>div]:bg-gradient-to-r [&>div]:from-cyan-400 [&>div]:via-sky-500 [&>div]:to-indigo-500 [&>div]:rounded-l-full'
+            indicatorColor='bg-green-500'
           />
           <div className='flex justify-between text-sm'>
             <div className='flex items-center gap-1'>
@@ -111,13 +112,7 @@ async function ProjectCards() {
   ));
 }
 
-export async function ProjectsContent({
-  searchParams,
-}: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}) {
-  const query = (await searchParams)?.q;
-  console.log('query', query);
+export async function ProjectsContent() {
   return (
     <main className='flex-1 p-4 md:p-6 lg:p-8'>
       <div className='flex flex-col gap-6'>

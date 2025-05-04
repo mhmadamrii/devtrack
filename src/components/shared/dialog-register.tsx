@@ -1,3 +1,7 @@
+import * as z from 'zod';
+
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import { useState, type ChangeEvent } from 'react';
 import { Input } from '~/components/ui/input';
 import { Separator } from '../ui/separator';
@@ -7,6 +11,15 @@ import { Button } from '~/components/ui/button';
 import { toast } from 'sonner';
 import { authClient } from '~/server/auth/client';
 import { Spinner } from './spinner';
+
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '~/components/ui/form';
 
 import {
   Card,
@@ -24,6 +37,15 @@ import {
   DialogTitle,
 } from '~/components/ui/dialog';
 
+const formSchema = z.object({
+  email: z.string().email({ message: 'Invalid email address' }),
+  password: z
+    .string()
+    .min(6, { message: 'Password must be at least 6 characters' }),
+});
+
+type FormData = z.infer<typeof formSchema>;
+
 export function DialogRegister({
   open,
   onOpenChange,
@@ -36,6 +58,13 @@ export function DialogRegister({
   const [isLoading, setIsLoading] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
 
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -45,24 +74,26 @@ export function DialogRegister({
     password: '',
   });
 
-  const handleChangeCredentials = (e: ChangeEvent<HTMLInputElement>) => {
-    setCredentials((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }));
-  };
-
-  const handleLogin = async () => {
+  const handleLogin = async ({
+    email,
+    password,
+  }: {
+    email: string;
+    password: string;
+  }) => {
     setIsRedirecting(true);
     await authClient.signIn.email(
       {
-        email: credentials.email,
-        password: credentials.password,
+        email,
+        password,
       },
       {
-        onSuccess: () => {
+        onSuccess: (res) => {
+          router.refresh();
           console.log('pushing to dashboard');
-          router.push('/');
+          if (res.data.token) {
+            router.push('/');
+          }
         },
         onError: (err) => {
           console.log('error', err);
@@ -74,18 +105,27 @@ export function DialogRegister({
     );
   };
 
-  const handleRegister = async () => {
+  const handleRegister = async ({
+    email,
+    password,
+  }: {
+    email: string;
+    password: string;
+  }) => {
     setIsLoading(true);
     await authClient.signUp.email(
       {
-        email: credentials.email,
-        password: credentials.password,
+        email,
+        password,
         name: 'John Doe',
       },
       {
-        onSuccess: (res) => {
+        onSuccess: () => {
           toast.success('Successfully registered');
-          handleLogin();
+          handleLogin({
+            email,
+            password,
+          });
         },
         onError: (err: any) => {
           setIsLoading(false);
@@ -97,6 +137,13 @@ export function DialogRegister({
         },
       },
     );
+  };
+
+  const onSubmit = (data: FormData) => {
+    handleRegister({
+      email: data.email,
+      password: data.password,
+    });
   };
 
   return (
@@ -115,57 +162,90 @@ export function DialogRegister({
           </CardHeader>
           <CardContent>
             {isRedirecting ? (
-              <div className="flex flex-col items-center justify-center py-8 space-y-4">
+              <div className='flex flex-col items-center justify-center py-8 space-y-4'>
                 <Spinner />
-                <p className="text-center text-muted-foreground">
+                <p className='text-center text-muted-foreground'>
                   Hold tight, redirecting to dashboard...
                 </p>
               </div>
             ) : (
               <>
-                <div className='grid w-full items-center gap-4'>
-                  <div className='w-full max-w-xs space-y-2'>
-                    <div className='relative flex items-center rounded-md border focus-within:ring-1 focus-within:ring-ring pl-2'>
-                      <MailIcon className='h-5 w-5 text-muted-foreground' />
-                      <Input
-                        type='email'
-                        placeholder='Email'
-                        className='border-0 focus-visible:ring-0 shadow-none'
-                        onChange={handleChangeCredentials}
-                        name='email'
-                        disabled={isLoading}
-                      />
-                    </div>
-                    <div className='relative flex items-center rounded-md border focus-within:ring-1 focus-within:ring-ring px-2'>
-                      <LockIcon className='h-5 w-5 text-muted-foreground' />
-                      <Input
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder='Password'
-                        className='border-0 focus-visible:ring-0 shadow-none'
-                        onChange={handleChangeCredentials}
-                        name='password'
-                        disabled={isLoading}
-                      />
-                      <button onClick={togglePasswordVisibility}>
-                        {showPassword ? (
-                          <EyeOffIcon className='h-5 w-5 text-muted-foreground' />
-                        ) : (
-                          <EyeIcon className='h-5 w-5 text-muted-foreground' />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                  <Button
-                    onClick={handleRegister}
-                    className='cursor-pointer'
-                    disabled={isLoading}
+                <Form {...form}>
+                  <form
+                    onSubmit={form.handleSubmit(onSubmit)}
+                    className='grid w-full items-center gap-4'
                   >
-                    {isLoading ? <Spinner /> : 'Get Started'}
-                  </Button>
-                </div>
+                    <div className='w-full max-w-xs space-y-2'>
+                      <FormField
+                        control={form.control}
+                        name='email'
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Email</FormLabel>
+                            <div className='relative flex items-center rounded-md border focus-within:ring-1 focus-within:ring-ring pl-2'>
+                              <MailIcon className='h-5 w-5 text-muted-foreground' />
+                              <FormControl>
+                                <Input
+                                  placeholder='Email'
+                                  {...field}
+                                  disabled={isLoading}
+                                  className='border-0 focus-visible:ring-0 shadow-none'
+                                />
+                              </FormControl>
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name='password'
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Password</FormLabel>
+                            <div className='relative flex items-center rounded-md border focus-within:ring-1 focus-within:ring-ring px-2'>
+                              <LockIcon className='h-5 w-5 text-muted-foreground' />
+                              <FormControl>
+                                <Input
+                                  type={showPassword ? 'text' : 'password'}
+                                  placeholder='Password'
+                                  {...field}
+                                  disabled={isLoading}
+                                  className='border-0 focus-visible:ring-0 shadow-none'
+                                />
+                              </FormControl>
+                              <button
+                                type='button'
+                                onClick={togglePasswordVisibility}
+                                className='ml-2'
+                                tabIndex={-1}
+                              >
+                                {showPassword ? (
+                                  <EyeOffIcon className='h-5 w-5 text-muted-foreground' />
+                                ) : (
+                                  <EyeIcon className='h-5 w-5 text-muted-foreground' />
+                                )}
+                              </button>
+                            </div>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    <Button
+                      type='submit'
+                      disabled={isLoading}
+                      className='cursor-pointer'
+                    >
+                      {isLoading ? <Spinner /> : 'Get Started'}
+                    </Button>
+                  </form>
+                </Form>
                 <div className='relative my-4 flex items-center justify-center overflow-hidden'>
                   <Separator />
-                  <div className='px-2 text-center bg-transparent text-sm'>OR</div>
+                  <div className='px-2 text-center bg-transparent text-sm'>
+                    OR
+                  </div>
                   <Separator />
                 </div>
                 <div className='grid w-full gap-2'>

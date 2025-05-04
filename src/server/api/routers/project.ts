@@ -7,13 +7,16 @@ import {
   projectManagerProcedure,
   protectedProcedure,
   publicProcedure,
+  companyProcedure,
 } from '~/server/api/trpc';
+import { TRPCError } from '@trpc/server';
 
 export const projectRouter = createTRPCRouter({
-  getAllProjects: publicProcedure.query(async ({ ctx }) => {
+  getAllProjects: companyProcedure.query(async ({ ctx }) => {
     const allProjects = await ctx.db
       .select()
       .from(projects)
+      .where(eq(projects.companyId, ctx.companyId))
       .orderBy(desc(projects.createdAt));
 
     const projectsWithTeamMembers = await Promise.all(
@@ -40,7 +43,7 @@ export const projectRouter = createTRPCRouter({
 
     return projectsWithTeamMembers;
   }),
-  getProjectById: publicProcedure
+  getProjectById: companyProcedure
     .input(
       z.object({
         projectId: z.number(),
@@ -59,17 +62,26 @@ export const projectRouter = createTRPCRouter({
         .from(projectMembers)
         .innerJoin(teams, eq(projectMembers.teamId, teams.id))
         .where(eq(projectMembers.projectId, input.projectId));
-      console.log('projectTeamMembers ->', projectTeamMembers);
 
       const projectDetails = await ctx.db
         .select()
         .from(projects)
-        .where(eq(projects.id, input.projectId))
+        .where(and(
+          eq(projects.id, input.projectId),
+          eq(projects.companyId, ctx.companyId)
+        ))
         .limit(1);
+
+      if (!projectDetails.length) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Project not found or you do not have access to it',
+        });
+      }
 
       return { ...projectDetails[0], teamMembers: projectTeamMembers };
     }),
-  getDetailProjectById: publicProcedure
+  getDetailProjectById: companyProcedure
     .input(
       z.object({
         projectId: z.number(),
@@ -79,11 +91,17 @@ export const projectRouter = createTRPCRouter({
       const project = await ctx.db
         .select()
         .from(projects)
-        .where(eq(projects.id, input.projectId))
+        .where(and(
+          eq(projects.id, input.projectId),
+          eq(projects.companyId, ctx.companyId)
+        ))
         .limit(1);
 
       if (!project.length) {
-        throw new Error('Project not found');
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Project not found or you do not have access to it',
+        });
       }
 
       const projectIssues = await ctx.db
@@ -103,7 +121,6 @@ export const projectRouter = createTRPCRouter({
         .where(eq(issues.projectId, input.projectId))
         .orderBy(desc(issues.createdAt));
 
-      // Get the project team members
       const projectTeamMembers = await ctx.db
         .select({
           teamId: teams.id,
@@ -117,14 +134,13 @@ export const projectRouter = createTRPCRouter({
         .innerJoin(teams, eq(projectMembers.teamId, teams.id))
         .where(eq(projectMembers.projectId, input.projectId));
 
-      // Return the project with its related data
       return {
         ...project[0],
         issues: projectIssues,
         teamMembers: projectTeamMembers,
       };
     }),
-  editProject: protectedProcedure
+  editProject: companyProcedure
     .input(
       z.object({
         projectId: z.number(),
@@ -137,8 +153,24 @@ export const projectRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      // First verify the project belongs to the user's company
+      const project = await ctx.db
+        .select()
+        .from(projects)
+        .where(and(
+          eq(projects.id, input.projectId),
+          eq(projects.companyId, ctx.companyId)
+        ))
+        .limit(1);
+
+      if (!project.length) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Project not found or you do not have access to it',
+        });
+      }
+
       return await ctx.db.transaction(async (tx) => {
-        // 1. Update the project details
         await tx
           .update(projects)
           .set({
@@ -150,12 +182,10 @@ export const projectRouter = createTRPCRouter({
           })
           .where(eq(projects.id, input.projectId));
 
-        // 2. Remove all existing team members for this project
         await tx
           .delete(projectMembers)
           .where(eq(projectMembers.projectId, input.projectId));
 
-        // 3. Add the new team members
         if (input.teamMembers.length > 0) {
           const projectMembersToInsert = input.teamMembers.map((teamId) => ({
             projectId: input.projectId,
@@ -166,7 +196,6 @@ export const projectRouter = createTRPCRouter({
           await tx.insert(projectMembers).values(projectMembersToInsert);
         }
 
-        // 4. Get the updated project with team members
         const updatedTeamMembers = await tx
           .select({
             teamId: teams.id,
@@ -186,7 +215,7 @@ export const projectRouter = createTRPCRouter({
         };
       });
     }),
-  create: projectManagerProcedure
+  create: companyProcedure
     .input(
       z.object({
         name: z.string().min(1),
@@ -205,13 +234,14 @@ export const projectRouter = createTRPCRouter({
           status: input.status,
           progress: input.progress,
           dueDate: input.dueDate,
+          companyId: ctx.companyId,
         })
         .returning({ id: projects.id });
 
       return result[0];
     }),
 
-  createProjectWithTeamMembers: projectManagerProcedure
+  createProjectWithTeamMembers: companyProcedure
     .input(
       z.object({
         name: z.string().min(1),
@@ -225,7 +255,6 @@ export const projectRouter = createTRPCRouter({
     )
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.transaction(async (tx) => {
-        // Create the project
         const [project] = await tx
           .insert(projects)
           .values({
@@ -234,6 +263,7 @@ export const projectRouter = createTRPCRouter({
             status: input.status,
             progress: input.progress,
             dueDate: input.dueDate,
+            companyId: ctx.companyId,
           })
           .returning({ id: projects.id });
 
@@ -241,17 +271,15 @@ export const projectRouter = createTRPCRouter({
           throw new Error('Failed to create project');
         }
 
-        // Prepare projectMembers rows
         const projectMembersToInsert = input.teamMembers.map((teamId) => ({
           projectId: project.id,
           teamId,
           createdAt: new Date(),
         }));
 
-        // Batch insert all team members
         await tx.insert(projectMembers).values(projectMembersToInsert);
 
-        return { projectId: project.id };
+        return project;
       });
     }),
 

@@ -4,23 +4,6 @@ import { ChevronRight, Home } from 'lucide-react';
 import { Suspense } from 'react';
 import { ProjectSkeleton } from '~/components/skeletons/project-skeleton';
 
-export const revalidate = 3600;
-export const dynamicParams = true;
-
-export async function generateStaticParams() {
-  const projects = await api.project.getAllProjects();
-
-  return projects
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    )
-    .slice(0, 20)
-    .map((project) => ({
-      id: project.id.toString(),
-    }));
-}
-
 import {
   Breadcrumb,
   BreadcrumbItem,

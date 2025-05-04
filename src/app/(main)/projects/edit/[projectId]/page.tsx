@@ -2,7 +2,6 @@ import Link from 'next/link';
 
 import { Suspense } from 'react';
 import { api } from '~/trpc/server';
-import { Navbar } from '~/components/shared/navbar';
 import { EditProjectForm } from '~/components/shared/edit-project-form';
 import { ChevronRight, Home } from 'lucide-react';
 import { EditProjectSkeleton } from '~/components/skeletons/edit-project-skeleton';
@@ -15,23 +14,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '~/components/ui/breadcrumb';
-
-export const revalidate = 3600; // seconds
-export const dynamicParams = true;
-
-export async function generateStaticParams() {
-  const projects = await api.project.getAllProjects();
-
-  return projects
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    )
-    .slice(0, 20)
-    .map((project) => ({
-      projectId: project.id.toString(),
-    }));
-}
 
 async function ProjectWithData({ projectId }: { projectId: string }) {
   try {

@@ -1,15 +1,17 @@
 import { z } from 'zod';
 import { issues, projects, teams } from '~/server/db/schema';
-import { eq, desc } from 'drizzle-orm';
+import { eq, desc, and } from 'drizzle-orm';
+import { TRPCError } from '@trpc/server';
 
 import {
   createTRPCRouter,
   protectedProcedure,
   publicProcedure,
+  companyProcedure,
 } from '~/server/api/trpc';
 
 export const issueRouter = createTRPCRouter({
-  getAllIssues: publicProcedure.query(async ({ ctx }) => {
+  getAllIssues: companyProcedure.query(async ({ ctx }) => {
     return await ctx.db
       .select({
         id: issues.id,
@@ -27,16 +29,36 @@ export const issueRouter = createTRPCRouter({
       .from(issues)
       .leftJoin(projects, eq(issues.projectId, projects.id))
       .leftJoin(teams, eq(issues.assignedTo, teams.id))
+      .where(eq(projects.companyId, ctx.companyId))
       .orderBy(desc(issues.createdAt));
   }),
 
-  getIssuesByProject: publicProcedure
+  getIssuesByProject: companyProcedure
     .input(
       z.object({
         projectId: z.number(),
       }),
     )
     .query(async ({ ctx, input }) => {
+      // First verify the project belongs to the user's company
+      const project = await ctx.db
+        .select()
+        .from(projects)
+        .where(
+          and(
+            eq(projects.id, input.projectId),
+            eq(projects.companyId, ctx.companyId),
+          ),
+        )
+        .limit(1);
+
+      if (!project.length) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Project not found or you do not have access to it',
+        });
+      }
+
       return await ctx.db
         .select({
           id: issues.id,
@@ -58,7 +80,7 @@ export const issueRouter = createTRPCRouter({
         .orderBy(desc(issues.createdAt));
     }),
 
-  getIssueById: publicProcedure
+  getIssueById: companyProcedure
     .input(
       z.object({
         issueId: z.number(),
@@ -82,51 +104,75 @@ export const issueRouter = createTRPCRouter({
         .from(issues)
         .leftJoin(projects, eq(issues.projectId, projects.id))
         .leftJoin(teams, eq(issues.assignedTo, teams.id))
-        .where(eq(issues.id, input.issueId))
+        .where(
+          and(
+            eq(issues.id, input.issueId),
+            eq(projects.companyId, ctx.companyId),
+          ),
+        )
         .limit(1);
+
+      if (!result.length) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Issue not found or you do not have access to it',
+        });
+      }
 
       return result[0];
     }),
 
-  create: protectedProcedure
+  create: companyProcedure
     .input(
       z.object({
         name: z.string().min(1),
         description: z.string().min(1),
         projectId: z.number(),
-        assignedTo: z.string().optional(), // This will be converted to number
+        assignedTo: z.string().optional(),
         priority: z.enum(['low', 'medium', 'high']),
         status: z.enum(['open', 'in_progress', 'closed']),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Validate project exists
+      // Validate project exists and belongs to the company
       const project = await ctx.db
         .select()
         .from(projects)
-        .where(eq(projects.id, input.projectId))
+        .where(
+          and(
+            eq(projects.id, input.projectId),
+            eq(projects.companyId, ctx.companyId),
+          ),
+        )
         .limit(1);
 
-      if (project.length === 0) {
-        throw new Error('Project not found');
+      if (!project.length) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Project not found or you do not have access to it',
+        });
       }
 
-      // Validate team member exists if provided
+      // Validate team member exists and belongs to the company if provided
       let assignedToId = null;
       if (input.assignedTo) {
         assignedToId = parseInt(input.assignedTo, 10);
         const teamMember = await ctx.db
           .select()
           .from(teams)
-          .where(eq(teams.id, assignedToId))
+          .where(
+            and(eq(teams.id, assignedToId), eq(teams.companyId, ctx.companyId)),
+          )
           .limit(1);
 
-        if (teamMember.length === 0) {
-          throw new Error('Team member not found');
+        if (!teamMember.length) {
+          throw new TRPCError({
+            code: 'NOT_FOUND',
+            message: 'Team member not found or you do not have access to it',
+          });
         }
       }
 
-      // Insert the issue
       const result = await ctx.db
         .insert(issues)
         .values({
@@ -145,7 +191,6 @@ export const issueRouter = createTRPCRouter({
         throw new Error('Failed to create issue');
       }
 
-      // Fetch the complete issue with project and assignee details
       const createdIssue = await ctx.db
         .select({
           id: issues.id,
@@ -169,7 +214,7 @@ export const issueRouter = createTRPCRouter({
       return createdIssue[0] || { id: result[0].id };
     }),
 
-  updateStatus: protectedProcedure
+  updateStatus: companyProcedure
     .input(
       z.object({
         issueId: z.number(),
@@ -177,6 +222,26 @@ export const issueRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      // First verify the issue belongs to a project in the user's company
+      const issue = await ctx.db
+        .select()
+        .from(issues)
+        .leftJoin(projects, eq(issues.projectId, projects.id))
+        .where(
+          and(
+            eq(issues.id, input.issueId),
+            eq(projects.companyId, ctx.companyId),
+          ),
+        )
+        .limit(1);
+
+      if (!issue.length) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Issue not found or you do not have access to it',
+        });
+      }
+
       await ctx.db
         .update(issues)
         .set({
@@ -185,7 +250,6 @@ export const issueRouter = createTRPCRouter({
         })
         .where(eq(issues.id, input.issueId));
 
-      // Return the updated issue with project and assignee details
       const updatedIssue = await ctx.db
         .select({
           id: issues.id,
@@ -209,7 +273,7 @@ export const issueRouter = createTRPCRouter({
       return updatedIssue[0];
     }),
 
-  updatePriority: protectedProcedure
+  updatePriority: companyProcedure
     .input(
       z.object({
         issueId: z.number(),
@@ -217,6 +281,26 @@ export const issueRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      // First verify the issue belongs to a project in the user's company
+      const issue = await ctx.db
+        .select()
+        .from(issues)
+        .leftJoin(projects, eq(issues.projectId, projects.id))
+        .where(
+          and(
+            eq(issues.id, input.issueId),
+            eq(projects.companyId, ctx.companyId),
+          ),
+        )
+        .limit(1);
+
+      if (!issue.length) {
+        throw new TRPCError({
+          code: 'NOT_FOUND',
+          message: 'Issue not found or you do not have access to it',
+        });
+      }
+
       await ctx.db
         .update(issues)
         .set({
@@ -225,7 +309,6 @@ export const issueRouter = createTRPCRouter({
         })
         .where(eq(issues.id, input.issueId));
 
-      // Return the updated issue with project and assignee details
       const updatedIssue = await ctx.db
         .select({
           id: issues.id,

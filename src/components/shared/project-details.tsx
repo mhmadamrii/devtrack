@@ -3,6 +3,7 @@
 import Link from 'next/link';
 
 import type { ProjectDetailsType } from '~/server/db/types';
+import { format } from 'date-fns';
 import { useState } from 'react';
 import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
@@ -137,12 +138,6 @@ export function ProjectDetails({
     }
   };
 
-  const getProgressColor = (progress: number) => {
-    if (progress < 30) return 'bg-red-500';
-    if (progress < 70) return 'bg-yellow-500';
-    return 'bg-green-500';
-  };
-
   return (
     <div className='space-y-6'>
       <div className='flex flex-col md:flex-row md:items-center justify-between gap-4'>
@@ -229,7 +224,8 @@ export function ProjectDetails({
                   </div>
                   <Progress
                     value={projectDetails.progress}
-                    className={getProgressColor(projectDetails.progress!)}
+                    indicatorColor='bg-green-500'
+                    className='bg-white h-[4px]'
                   />
                 </div>
               </div>
@@ -303,7 +299,7 @@ export function ProjectDetails({
                       className='flex items-center gap-2 p-2 border rounded-md'
                     >
                       <Avatar className='h-8 w-8'>
-                        <AvatarFallback>MM</AvatarFallback>
+                        <AvatarFallback>U</AvatarFallback>
                       </Avatar>
                       <div>
                         <div className='font-medium'>{member.teamName}</div>
@@ -403,7 +399,7 @@ export function ProjectDetails({
                           {issue.name}
                         </TableCell>
                         <TableCell>
-                          {new Date(issue.createdAt).toLocaleDateString()}
+                          {format(issue.createdAt, 'dd/mm/yyyy')}
                         </TableCell>
                         <TableCell>{issue.assignedTo}</TableCell>
                         <TableCell>

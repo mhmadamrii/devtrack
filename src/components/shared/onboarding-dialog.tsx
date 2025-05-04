@@ -1,11 +1,12 @@
 'use client';
 
 import type React from 'react';
+import * as z from 'zod';
 
+import { roleOptions, purposeOptions } from '~/lib/constants';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '~/components/ui/button';
-import * as z from 'zod';
 import { Input } from '~/components/ui/input';
 import { Textarea } from '~/components/ui/textarea';
 import { useForm } from 'react-hook-form';
@@ -63,79 +64,10 @@ const formSchema = z.object({
   purpose: z.string({ required_error: 'Please select a purpose' }),
   role: z.string({ required_error: 'Please select your role' }),
   additionalInfo: z.string().optional(),
+  company_password: z.string(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
-
-const purposeOptions = [
-  {
-    value: 'project_management',
-    label: 'Project Management',
-  },
-  {
-    value: 'issue_tracking',
-    label: 'Issue Tracking',
-  },
-  {
-    value: 'team_collaboration',
-    label: 'Team Collaboration',
-  },
-  {
-    value: 'resource_planning',
-    label: 'Resource Planning',
-  },
-  {
-    value: 'client_management',
-    label: 'Client Management',
-  },
-  {
-    value: 'other',
-    label: 'Other',
-  },
-];
-
-const roleOptions = [
-  {
-    value: 'developer',
-    label: 'Developer',
-  },
-  {
-    value: 'designer',
-    label: 'Designer',
-  },
-  {
-    value: 'qa_engineer',
-    label: 'QA Engineer',
-  },
-  {
-    value: 'project_manager',
-    label: 'Project Manager',
-  },
-  {
-    value: 'frontend_developer',
-    label: 'Frontend Developer',
-  },
-  {
-    value: 'backend_developer',
-    label: 'Backend Developer',
-  },
-  {
-    value: 'fullstack_developer',
-    label: 'Fullstack Developer',
-  },
-  {
-    value: 'mobile_developer',
-    label: 'Mobile Developer',
-  },
-  {
-    value: 'devops_engineer',
-    label: 'DevOps Engineer',
-  },
-  {
-    value: 'other',
-    label: 'Other',
-  },
-];
 
 interface OnboardingDialogProps {
   children?: React.ReactNode;
@@ -159,6 +91,7 @@ export function OnboardingDialog({
       company: '',
       purpose: '',
       additionalInfo: '',
+      company_password: '',
     },
   });
 
@@ -179,14 +112,31 @@ export function OnboardingDialog({
       },
     });
 
-  function onSubmit(data: FormValues) {
-    console.log('data', data);
+  const { mutateAsync: verifyCompany } = api.company.verifyCompany.useMutation({
+    onSuccess: (res: any) => {
+      console.log('Company registered:', res);
+      if (res.error) {
+        return toast.error(res.message);
+      }
+    },
+    onError: (error) => {
+      console.error(error);
+      toast.error('Invalid company password');
+    },
+  });
 
-    updateOnboarding({
-      onboarded: true,
-      name: data.name,
-      role: data.role,
-      companyId: data.company,
+  async function onSubmit(data: FormValues) {
+    verifyCompany({
+      companyId: parseInt(data.company),
+      company_password: data.company_password,
+    }).then((res: any) => {
+      if (res.company_password)
+        updateOnboarding({
+          onboarded: true,
+          name: data.name,
+          role: data.role,
+          companyId: data.company,
+        });
     });
   }
 
@@ -325,6 +275,26 @@ export function OnboardingDialog({
                               >
                                 one if doesn't exist{' '}
                               </span>
+                            </FormDescription>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name='company_password'
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Company Password</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder='Company password'
+                                {...field}
+                              />
+                            </FormControl>
+                            <FormDescription>
+                              Provide company password
                             </FormDescription>
                             <FormMessage />
                           </FormItem>

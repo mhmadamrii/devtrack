@@ -12,6 +12,8 @@ import { initTRPC, TRPCError } from '@trpc/server';
 import { ZodError } from 'zod';
 import { auth } from '~/server/auth';
 import { db } from '~/server/db';
+import { eq } from 'drizzle-orm';
+import { user } from '~/server/db/schema';
 
 /**
  * 1. CONTEXT
@@ -45,6 +47,8 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
   };
 };
 
+type Context = Awaited<ReturnType<typeof createTRPCContext>>;
+
 /**
  * 2. INITIALIZATION
  *
@@ -52,6 +56,7 @@ export const createTRPCContext = async (opts: { headers: Headers }) => {
  * ZodErrors so that you get typesafety on the frontend if your procedure fails due to validation
  * errors on the backend.
  */
+// const t = initTRPC.context<Context>().create({
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,
   errorFormatter({ shape, error }) {
@@ -138,6 +143,43 @@ export const protectedProcedure = t.procedure
       ctx: {
         // infers the `session` as non-nullable
         session: { ...ctx.session, user: ctx.session.user },
+      },
+    });
+  });
+
+/**
+ * Company procedure
+ *
+ * This procedure ensures that the user is authenticated and has a company ID.
+ * It adds the company ID to the context for use in queries.
+ */
+export const companyProcedure = protectedProcedure
+  .use(timingMiddleware)
+  .use(async ({ ctx, next }) => {
+    console.log('ctx.session', ctx.session);
+    if (!ctx.session?.user) {
+      throw new TRPCError({ code: 'UNAUTHORIZED' });
+    }
+
+    // Get the user's company ID
+    const userData = await ctx.db.query.user.findFirst({
+      where: eq(user.id, ctx.session.user.id),
+      columns: {
+        companyId: true,
+      },
+    });
+
+    if (!userData?.companyId) {
+      throw new TRPCError({
+        code: 'FORBIDDEN',
+        message: 'User is not associated with any company',
+      });
+    }
+
+    return next({
+      ctx: {
+        ...ctx,
+        companyId: userData.companyId,
       },
     });
   });

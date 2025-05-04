@@ -20,8 +20,17 @@ import {
 } from '~/components/ui/form';
 
 const formSchema = z.object({
-  company_name: z.string().min(1).min(3).max(100),
-  refferal: z.string().min(1).min(0).optional(),
+  company_name: z
+    .string()
+    .min(3, { message: 'Company name must be at least 3 characters' })
+    .max(100),
+  company_password: z
+    .string()
+    .min(1, {
+      message: 'Company password is required',
+    })
+    .min(0)
+    .optional(),
 });
 
 export function NewCompanyForm({
@@ -35,8 +44,8 @@ export function NewCompanyForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       company_name: '',
-      refferal: ''
-    }
+      company_password: '',
+    },
   });
 
   const { mutate, isPending } = api.company.create.useMutation({
@@ -54,13 +63,15 @@ export function NewCompanyForm({
     try {
       mutate({
         name: values.company_name,
-        referral: values.refferal || '',
+        company_password: values.company_password || '',
       });
     } catch (error) {
       console.error('Form submission error', error);
       toast.error('Failed to submit the form. Please try again.');
     }
   }
+
+  console.log(form.getValues('company_password'));
 
   return (
     <Form {...form}>
@@ -90,19 +101,38 @@ export function NewCompanyForm({
 
         <FormField
           control={form.control}
-          name='refferal'
+          name='company_password'
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Verification Refferal (optional)</FormLabel>
-              <FormControl>
-                <Input
+              <FormLabel>Company Password</FormLabel>
+              <div className='flex items-center space-x-2'>
+                <FormControl className='flex-grow'>
+                  <Input
+                    disabled={isPending}
+                    placeholder='shadcn'
+                    type='text'
+                    {...field}
+                  />
+                </FormControl>
+                <Button
+                  type='button'
                   disabled={isPending}
-                  placeholder='shadcn'
-                  type='text'
-                  {...field}
-                />
-              </FormControl>
-              <FormDescription>Your refferal verification</FormDescription>
+                  onClick={() => {
+                    const randomPassword = Math.random()
+                      .toString(36)
+                      .slice(-10);
+                    form.setValue('company_password', randomPassword);
+                  }}
+                >
+                  Generate
+                </Button>
+              </div>
+              <FormDescription>
+                Please note that this password is appearing only once.{' '}
+                <span className='text-red-500 font-semibold'>
+                  If you lose it, you will not be able to access your company.
+                </span>
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
