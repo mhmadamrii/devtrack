@@ -99,8 +99,8 @@ export function NewProjectForm() {
       onSuccess: async () => {
         toast.success('Successfully created project 🚀');
         router.refresh();
+        await new Promise((res) => setTimeout(res, 1000));
         router.push('/projects');
-        await new Promise((res) => setTimeout(res, 2000));
         toast.success('Good luck! 💪');
       },
       onError: (error) => {
@@ -126,18 +126,6 @@ export function NewProjectForm() {
     const diff = data.endDate - data.startDate;
     const diffInDays = diff / (1000 * 60 * 60 * 24);
     createProject({
-      name: data.name,
-      description: data.description,
-      status: data.status as
-        | 'planning'
-        | 'in_progress'
-        | 'completed'
-        | 'pending',
-      progress: progress[0],
-      dueDate: diffInDays,
-      teamMembers: data.teamMembers,
-    });
-    console.log('my payload', {
       name: data.name,
       description: data.description,
       status: data.status as

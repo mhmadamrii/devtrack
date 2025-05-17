@@ -135,7 +135,7 @@ export function OnboardingDialog({
           onboarded: true,
           name: data.name,
           role: data.role,
-          companyId: data.company,
+          companyId: parseInt(data.company),
         });
     });
   }

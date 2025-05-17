@@ -11,7 +11,7 @@ export const userRouter = createTRPCRouter({
         name: z.string().min(1),
         onboarded: z.boolean(),
         role: z.string().min(1),
-        companyId: z.string().min(1),
+        companyId: z.number().min(1),
       }),
     )
     .mutation(async ({ ctx, input }) => {

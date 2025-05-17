@@ -6,7 +6,6 @@ import { TRPCError } from '@trpc/server';
 import {
   createTRPCRouter,
   protectedProcedure,
-  publicProcedure,
   companyProcedure,
 } from '~/server/api/trpc';
 
@@ -279,7 +278,6 @@ export const issueRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // First verify the issue belongs to a project in the user's company
       const issue = await ctx.db
         .select()
         .from(issues)
@@ -307,59 +305,6 @@ export const issueRouter = createTRPCRouter({
         })
         .where(eq(issues.id, input.issueId));
 
-      const updatedIssue = await ctx.db
-        .select({
-          id: issues.id,
-          name: issues.name,
-          description: issues.description,
-          projectId: issues.projectId,
-          projectName: projects.name,
-          assignedTo: issues.assignedTo,
-          assigneeName: teams.name,
-          priority: issues.priority,
-          status: issues.status,
-          createdAt: issues.createdAt,
-          updatedAt: issues.updatedAt,
-        })
-        .from(issues)
-        .leftJoin(projects, eq(issues.projectId, projects.id))
-        .leftJoin(teams, eq(issues.assignedTo, teams.id))
-        .where(eq(issues.id, input.issueId))
-        .limit(1);
-
-      return updatedIssue[0];
-    }),
-
-  updateAssignee: protectedProcedure
-    .input(
-      z.object({
-        issueId: z.number(),
-        assignedTo: z.number().nullable(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      // Validate team member exists if provided
-      if (input.assignedTo !== null) {
-        const teamMember = await ctx.db
-          .select()
-          .from(teams)
-          .where(eq(teams.id, input.assignedTo))
-          .limit(1);
-
-        if (teamMember.length === 0) {
-          throw new Error('Team member not found');
-        }
-      }
-
-      await ctx.db
-        .update(issues)
-        .set({
-          assignedTo: input.assignedTo,
-          updatedAt: new Date(),
-        })
-        .where(eq(issues.id, input.issueId));
-
-      // Return the updated issue with project and assignee details
       const updatedIssue = await ctx.db
         .select({
           id: issues.id,
