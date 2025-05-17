@@ -1,4 +1,4 @@
-import { is, relations, sql } from 'drizzle-orm';
+import { relations, sql } from 'drizzle-orm';
 
 import {
   index,
@@ -12,6 +12,7 @@ import {
   integer,
   varchar,
   primaryKey,
+  uuid,
 } from 'drizzle-orm/pg-core';
 
 export const createTable = pgTableCreator((name) => `devtrack_${name}`);
@@ -47,7 +48,7 @@ export const teamRolesEnum = pgEnum('team_role', [
 ]);
 
 export const user = pgTable('user', {
-  id: text('id').primaryKey(),
+  id: uuid().defaultRandom().primaryKey(),
   name: text('name').notNull(),
   email: text('email').notNull().unique(),
   companyId: integer('company_id').references(() => companies.id, {
@@ -65,24 +66,24 @@ export const user = pgTable('user', {
 });
 
 export const session = pgTable('session', {
-  id: text('id').primaryKey(),
+  id: uuid().defaultRandom().primaryKey(),
   expiresAt: timestamp('expires_at').notNull(),
   token: text('token').notNull().unique(),
   createdAt: timestamp('created_at').notNull(),
   updatedAt: timestamp('updated_at').notNull(),
   ipAddress: text('ip_address'),
   userAgent: text('user_agent'),
-  userId: text('user_id')
+  userId: uuid('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
   impersonatedBy: text('impersonated_by'),
 });
 
 export const account = pgTable('account', {
-  id: text('id').primaryKey(),
+  id: uuid().defaultRandom().primaryKey(),
   accountId: text('account_id').notNull(),
   providerId: text('provider_id').notNull(),
-  userId: text('user_id')
+  userId: uuid('user_id')
     .notNull()
     .references(() => user.id, { onDelete: 'cascade' }),
   accessToken: text('access_token'),
@@ -141,9 +142,9 @@ export const issues = pgTable(
     projectId: integer('project_id')
       .notNull()
       .references(() => projects.id, { onDelete: 'cascade' }),
-    assignedTo: integer('assigned_to').references(() => teams.id, {
-      onDelete: 'set null',
-    }),
+    assignedTo: uuid('user_id')
+      .notNull()
+      .references(() => teams.id, { onDelete: 'cascade' }),
     priority: issuePriorityEnum('priority').default('medium').notNull(),
     status: issueStatusEnum('status').default('in_progress').notNull(),
     createdAt: timestamp('created_at', { withTimezone: true })
@@ -164,7 +165,7 @@ export const issues = pgTable(
 export const teams = pgTable(
   'team',
   {
-    id: serial('id').primaryKey(),
+    id: uuid().defaultRandom().primaryKey(),
     name: varchar('name', { length: 256 }).notNull(),
     email: varchar('email', { length: 256 }).notNull(),
     phone: varchar('phone', { length: 256 }),
@@ -213,7 +214,7 @@ export const projectMembers = pgTable(
     projectId: integer('project_id')
       .notNull()
       .references(() => projects.id, { onDelete: 'cascade' }),
-    teamId: integer('team_id')
+    teamId: uuid('team_id')
       .notNull()
       .references(() => teams.id, { onDelete: 'cascade' }),
     role: varchar('role', { length: 100 }),
@@ -229,7 +230,6 @@ export const projectMembers = pgTable(
 );
 
 // Define relations for better type safety and easier joins
-
 export const userRelations = relations(user, ({ many, one }) => ({
   sessions: many(session),
   accounts: many(account),

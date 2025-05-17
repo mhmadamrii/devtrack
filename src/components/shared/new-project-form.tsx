@@ -79,7 +79,7 @@ const formSchema = z
     endDate: z.date({ required_error: 'End date is required' }),
     status: z.string({ required_error: 'Please select a status' }),
     teamMembers: z
-      .array(z.number())
+      .array(z.string())
       .min(1, { message: 'Select at least one team member' }),
   })
   .refine((data) => data.endDate >= data.startDate, {
@@ -109,7 +109,7 @@ export function NewProjectForm() {
       },
     });
 
-  const { data: teamData } = api.team.getAllTeams.useQuery();
+  const { data: teamData } = api.team.getAllTeams.useQuery({ source: '' });
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -126,6 +126,18 @@ export function NewProjectForm() {
     const diff = data.endDate - data.startDate;
     const diffInDays = diff / (1000 * 60 * 60 * 24);
     createProject({
+      name: data.name,
+      description: data.description,
+      status: data.status as
+        | 'planning'
+        | 'in_progress'
+        | 'completed'
+        | 'pending',
+      progress: progress[0],
+      dueDate: diffInDays,
+      teamMembers: data.teamMembers,
+    });
+    console.log('my payload', {
       name: data.name,
       description: data.description,
       status: data.status as

@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { projects, teams, issues, projectMembers } from '~/server/db/schema';
 import { eq, desc, and } from 'drizzle-orm';
+import { TRPCError } from '@trpc/server';
 
 import {
   createTRPCRouter,
@@ -9,7 +10,6 @@ import {
   publicProcedure,
   companyProcedure,
 } from '~/server/api/trpc';
-import { TRPCError } from '@trpc/server';
 
 export const projectRouter = createTRPCRouter({
   getAllProjects: companyProcedure.query(async ({ ctx }) => {
@@ -66,10 +66,12 @@ export const projectRouter = createTRPCRouter({
       const projectDetails = await ctx.db
         .select()
         .from(projects)
-        .where(and(
-          eq(projects.id, input.projectId),
-          eq(projects.companyId, ctx.companyId)
-        ))
+        .where(
+          and(
+            eq(projects.id, input.projectId),
+            eq(projects.companyId, ctx.companyId),
+          ),
+        )
         .limit(1);
 
       if (!projectDetails.length) {
@@ -91,10 +93,12 @@ export const projectRouter = createTRPCRouter({
       const project = await ctx.db
         .select()
         .from(projects)
-        .where(and(
-          eq(projects.id, input.projectId),
-          eq(projects.companyId, ctx.companyId)
-        ))
+        .where(
+          and(
+            eq(projects.id, input.projectId),
+            eq(projects.companyId, ctx.companyId),
+          ),
+        )
         .limit(1);
 
       if (!project.length) {
@@ -140,6 +144,49 @@ export const projectRouter = createTRPCRouter({
         teamMembers: projectTeamMembers,
       };
     }),
+
+  createProjectWithTeamMembers: companyProcedure
+    .input(
+      z.object({
+        name: z.string().min(1),
+        description: z.string().min(1),
+        status: z.enum(['planning', 'in_progress', 'completed', 'pending']),
+        progress: z.number().default(0),
+        dueDate: z.number().optional(),
+        teamMembers: z.array(z.string().min(1)),
+        role: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.transaction(async (tx) => {
+        const [project] = await tx
+          .insert(projects)
+          .values({
+            name: input.name,
+            description: input.description,
+            status: input.status,
+            progress: input.progress,
+            dueDate: input.dueDate,
+            companyId: ctx.companyId,
+          })
+          .returning({ id: projects.id });
+
+        if (!project?.id) {
+          throw new Error('Failed to create project');
+        }
+
+        const projectMembersToInsert = input.teamMembers.map((teamId) => ({
+          projectId: project.id,
+          teamId,
+          createdAt: new Date(),
+        }));
+
+        await tx.insert(projectMembers).values(projectMembersToInsert);
+
+        return project;
+      });
+    }),
+
   editProject: companyProcedure
     .input(
       z.object({
@@ -157,10 +204,12 @@ export const projectRouter = createTRPCRouter({
       const project = await ctx.db
         .select()
         .from(projects)
-        .where(and(
-          eq(projects.id, input.projectId),
-          eq(projects.companyId, ctx.companyId)
-        ))
+        .where(
+          and(
+            eq(projects.id, input.projectId),
+            eq(projects.companyId, ctx.companyId),
+          ),
+        )
         .limit(1);
 
       if (!project.length) {
@@ -239,48 +288,6 @@ export const projectRouter = createTRPCRouter({
         .returning({ id: projects.id });
 
       return result[0];
-    }),
-
-  createProjectWithTeamMembers: companyProcedure
-    .input(
-      z.object({
-        name: z.string().min(1),
-        description: z.string().min(1),
-        status: z.enum(['planning', 'in_progress', 'completed', 'pending']),
-        progress: z.number().default(0),
-        dueDate: z.number().optional(),
-        teamMembers: z.array(z.number().min(1)),
-        role: z.string().optional(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      return await ctx.db.transaction(async (tx) => {
-        const [project] = await tx
-          .insert(projects)
-          .values({
-            name: input.name,
-            description: input.description,
-            status: input.status,
-            progress: input.progress,
-            dueDate: input.dueDate,
-            companyId: ctx.companyId,
-          })
-          .returning({ id: projects.id });
-
-        if (!project?.id) {
-          throw new Error('Failed to create project');
-        }
-
-        const projectMembersToInsert = input.teamMembers.map((teamId) => ({
-          projectId: project.id,
-          teamId,
-          createdAt: new Date(),
-        }));
-
-        await tx.insert(projectMembers).values(projectMembersToInsert);
-
-        return project;
-      });
     }),
 
   addTeamMember: protectedProcedure

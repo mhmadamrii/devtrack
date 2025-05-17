@@ -1,1 +1,0 @@
-ALTER TABLE "company" ADD COLUMN "is_verified" boolean DEFAULT false;

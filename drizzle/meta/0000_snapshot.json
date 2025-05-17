@@ -1,5 +1,5 @@
 {
-  "id": "313d7973-93b5-4385-a13a-347db9ab306b",
+  "id": "b23af37a-341b-4329-a028-0fbf8b5a11b4",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -10,9 +10,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "account_id": {
           "name": "account_id",
@@ -28,7 +29,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -131,6 +132,13 @@
           "primaryKey": false,
           "notNull": true
         },
+        "is_verified": {
+          "name": "is_verified",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -198,11 +206,11 @@
           "primaryKey": false,
           "notNull": true
         },
-        "assigned_to": {
-          "name": "assigned_to",
-          "type": "integer",
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "priority": {
           "name": "priority",
@@ -270,7 +278,7 @@
           "name": "issue_assigned_to_idx",
           "columns": [
             {
-              "expression": "assigned_to",
+              "expression": "user_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -296,17 +304,17 @@
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
-        "issue_assigned_to_team_id_fk": {
-          "name": "issue_assigned_to_team_id_fk",
+        "issue_user_id_team_id_fk": {
+          "name": "issue_user_id_team_id_fk",
           "tableFrom": "issue",
           "tableTo": "team",
           "columnsFrom": [
-            "assigned_to"
+            "user_id"
           ],
           "columnsTo": [
             "id"
           ],
-          "onDelete": "set null",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
@@ -328,7 +336,7 @@
         },
         "team_id": {
           "name": "team_id",
-          "type": "integer",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -559,9 +567,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "expires_at": {
           "name": "expires_at",
@@ -601,7 +610,7 @@
         },
         "user_id": {
           "name": "user_id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": false,
           "notNull": true
         },
@@ -648,9 +657,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "name": {
           "name": "name",
@@ -779,9 +789,10 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "text",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
         },
         "name": {
           "name": "name",

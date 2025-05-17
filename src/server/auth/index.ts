@@ -33,6 +33,9 @@ export const auth = betterAuth({
     enabled: true,
     autoSignIn: false,
   },
+  advanced: {
+    generateId: false,
+  },
 } satisfies BetterAuthOptions);
 
 export const getServerSession = cache(async () => {

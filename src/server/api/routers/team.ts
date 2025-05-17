@@ -1,3 +1,6 @@
+import { eq, desc, and } from 'drizzle-orm';
+import { TRPCError } from '@trpc/server';
+import { createTRPCRouter, companyProcedure } from '~/server/api/trpc';
 import { z } from 'zod';
 import {
   teams,
@@ -6,9 +9,6 @@ import {
   projects,
   user,
 } from '~/server/db/schema';
-import { eq, desc, and } from 'drizzle-orm';
-import { TRPCError } from '@trpc/server';
-import { createTRPCRouter, companyProcedure } from '~/server/api/trpc';
 
 export const teamRouter = createTRPCRouter({
   getAllTeams: companyProcedure

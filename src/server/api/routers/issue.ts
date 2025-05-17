@@ -134,7 +134,6 @@ export const issueRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Validate project exists and belongs to the company
       const project = await ctx.db
         .select()
         .from(projects)
@@ -153,10 +152,9 @@ export const issueRouter = createTRPCRouter({
         });
       }
 
-      // Validate team member exists and belongs to the company if provided
       let assignedToId = null;
       if (input.assignedTo) {
-        assignedToId = parseInt(input.assignedTo, 10);
+        assignedToId = input.assignedTo;
         const teamMember = await ctx.db
           .select()
           .from(teams)

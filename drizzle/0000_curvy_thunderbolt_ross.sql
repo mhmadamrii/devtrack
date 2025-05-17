@@ -3,10 +3,10 @@ CREATE TYPE "public"."issue_status" AS ENUM('open', 'in_progress', 'closed');-->
 CREATE TYPE "public"."project_status" AS ENUM('planning', 'in_progress', 'completed', 'pending');--> statement-breakpoint
 CREATE TYPE "public"."team_role" AS ENUM('Developer', 'Designer', 'QA Engineer', 'Project Manager', 'Frontend Developer', 'Backend Developer', 'Fullstack Developer', 'Mobile Developer', 'DevOps Engineer', 'Other');--> statement-breakpoint
 CREATE TABLE "account" (
-	"id" text PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"account_id" text NOT NULL,
 	"provider_id" text NOT NULL,
-	"user_id" text NOT NULL,
+	"user_id" uuid NOT NULL,
 	"access_token" text,
 	"refresh_token" text,
 	"id_token" text,
@@ -22,6 +22,7 @@ CREATE TABLE "company" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
 	"company_password" text NOT NULL,
+	"is_verified" boolean DEFAULT false,
 	"created_at" timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
@@ -31,7 +32,7 @@ CREATE TABLE "issue" (
 	"name" text NOT NULL,
 	"description" text,
 	"project_id" integer NOT NULL,
-	"assigned_to" integer,
+	"user_id" uuid NOT NULL,
 	"priority" "issue_priority" DEFAULT 'medium' NOT NULL,
 	"status" "issue_status" DEFAULT 'in_progress' NOT NULL,
 	"created_at" timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -40,7 +41,7 @@ CREATE TABLE "issue" (
 --> statement-breakpoint
 CREATE TABLE "project_member" (
 	"project_id" integer NOT NULL,
-	"team_id" integer NOT NULL,
+	"team_id" uuid NOT NULL,
 	"role" varchar(100),
 	"created_at" timestamp with time zone DEFAULT CURRENT_TIMESTAMP NOT NULL,
 	CONSTRAINT "project_member_project_id_team_id_pk" PRIMARY KEY("project_id","team_id")
@@ -59,20 +60,20 @@ CREATE TABLE "project" (
 );
 --> statement-breakpoint
 CREATE TABLE "session" (
-	"id" text PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"expires_at" timestamp NOT NULL,
 	"token" text NOT NULL,
 	"created_at" timestamp NOT NULL,
 	"updated_at" timestamp NOT NULL,
 	"ip_address" text,
 	"user_agent" text,
-	"user_id" text NOT NULL,
+	"user_id" uuid NOT NULL,
 	"impersonated_by" text,
 	CONSTRAINT "session_token_unique" UNIQUE("token")
 );
 --> statement-breakpoint
 CREATE TABLE "team" (
-	"id" serial PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" varchar(256) NOT NULL,
 	"email" varchar(256) NOT NULL,
 	"phone" varchar(256),
@@ -84,7 +85,7 @@ CREATE TABLE "team" (
 );
 --> statement-breakpoint
 CREATE TABLE "user" (
-	"id" text PRIMARY KEY NOT NULL,
+	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"name" text NOT NULL,
 	"email" text NOT NULL,
 	"company_id" integer,
@@ -111,7 +112,7 @@ CREATE TABLE "verification" (
 --> statement-breakpoint
 ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "issue" ADD CONSTRAINT "issue_project_id_project_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."project"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "issue" ADD CONSTRAINT "issue_assigned_to_team_id_fk" FOREIGN KEY ("assigned_to") REFERENCES "public"."team"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "issue" ADD CONSTRAINT "issue_user_id_team_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."team"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "project_member" ADD CONSTRAINT "project_member_project_id_project_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."project"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "project_member" ADD CONSTRAINT "project_member_team_id_team_id_fk" FOREIGN KEY ("team_id") REFERENCES "public"."team"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "project" ADD CONSTRAINT "project_company_id_company_id_fk" FOREIGN KEY ("company_id") REFERENCES "public"."company"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -121,7 +122,7 @@ ALTER TABLE "user" ADD CONSTRAINT "user_company_id_company_id_fk" FOREIGN KEY ("
 CREATE INDEX "company_name_idx" ON "company" USING btree ("name");--> statement-breakpoint
 CREATE INDEX "issue_name_idx" ON "issue" USING btree ("name");--> statement-breakpoint
 CREATE INDEX "issue_project_idx" ON "issue" USING btree ("project_id");--> statement-breakpoint
-CREATE INDEX "issue_assigned_to_idx" ON "issue" USING btree ("assigned_to");--> statement-breakpoint
+CREATE INDEX "issue_assigned_to_idx" ON "issue" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "project_member_project_idx" ON "project_member" USING btree ("project_id");--> statement-breakpoint
 CREATE INDEX "project_member_team_idx" ON "project_member" USING btree ("team_id");--> statement-breakpoint
 CREATE INDEX "project_name_idx" ON "project" USING btree ("name");--> statement-breakpoint

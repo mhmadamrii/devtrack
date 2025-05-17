@@ -132,7 +132,9 @@ export function NewIssueDialog({ children }: NewIssueDialogProps) {
     });
 
   const { data: teamData, refetch: getTeam } = api.team.getAllTeams.useQuery(
-    undefined,
+    {
+      source: '',
+    },
     {
       enabled: false,
     },
@@ -169,7 +171,6 @@ export function NewIssueDialog({ children }: NewIssueDialogProps) {
       status: 'open',
     });
 
-    // Reset the form
     form.reset();
   }
 
