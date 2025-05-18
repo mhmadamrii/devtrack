@@ -11,7 +11,6 @@ import { Progress } from '~/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '~/components/ui/tabs';
 import { Avatar, AvatarFallback } from '~/components/ui/avatar';
 import { NewIssueDialog } from '../shared/new-issue-dialog';
-import { AddTeamMemberDialog } from '../shared/add-team-member-dialog';
 import { getLabelStatus } from '~/lib/utils';
 
 import {
@@ -446,13 +445,6 @@ export function ProjectDetails({
         <TabsContent value='team' className='space-y-6'>
           <div className='flex justify-between items-center'>
             <h2 className='text-2xl font-bold'>Team Members</h2>
-            <AddTeamMemberDialog
-              projectId={parseInt(projectId)}
-              onSuccess={() => {
-                // Refresh the projectDetails data
-                window.location.reload();
-              }}
-            />
           </div>
 
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'>
@@ -536,14 +528,6 @@ export function ProjectDetails({
                   This projectDetails doesn't have any team members assigned
                   yet.
                 </p>
-                <AddTeamMemberDialog
-                  projectId={parseInt(projectId)}
-                  variant='outline'
-                  onSuccess={() => {
-                    // Refresh the projectDetails data
-                    window.location.reload();
-                  }}
-                />
               </div>
             )}
           </div>

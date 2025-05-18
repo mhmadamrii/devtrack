@@ -1,14 +1,15 @@
 'use client';
 
 import type React from 'react';
+import * as z from 'zod';
 
 import { useState } from 'react';
+import { Spinner } from './spinner';
 import { Calendar } from '~/components/ui/calendar';
 import { api } from '~/trpc/react';
 import { cn } from '~/lib/utils';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { Input } from '~/components/ui/input';
 import { toast } from 'sonner';
 import { Textarea } from '~/components/ui/textarea';
@@ -49,45 +50,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '~/components/ui/popover';
-
-// Sample data
-const projects = [
-  {
-    id: '1',
-    name: 'Website Redesign',
-  },
-  {
-    id: '2',
-    name: 'Mobile App Development',
-  },
-  {
-    id: '3',
-    name: 'API Integration',
-  },
-  {
-    id: '4',
-    name: 'Database Migration',
-  },
-];
-
-const members = [
-  {
-    id: '1',
-    name: 'John Doe',
-  },
-  {
-    id: '2',
-    name: 'Jane Smith',
-  },
-  {
-    id: '3',
-    name: 'Mike Johnson',
-  },
-  {
-    id: '4',
-    name: 'Sarah Williams',
-  },
-];
 
 const priorities = [
   {
@@ -394,11 +356,11 @@ export function NewIssueDialog({ children }: NewIssueDialogProps) {
                 Cancel
               </Button>
               <Button
-                className='cursor-pointer'
+                className='cursor-pointer w-[100px]'
                 type='submit'
                 disabled={isPending}
               >
-                {isPending ? 'Creating...' : 'Create Issue'}
+                {isPending ? <Spinner /> : 'Create Issue'}
               </Button>
             </DialogFooter>
           </form>

@@ -2,12 +2,7 @@ import { z } from 'zod';
 import { issues, projects, teams } from '~/server/db/schema';
 import { eq, desc, and } from 'drizzle-orm';
 import { TRPCError } from '@trpc/server';
-
-import {
-  createTRPCRouter,
-  protectedProcedure,
-  companyProcedure,
-} from '~/server/api/trpc';
+import { createTRPCRouter, companyProcedure } from '~/server/api/trpc';
 
 export const issueRouter = createTRPCRouter({
   getAllIssues: companyProcedure.query(async ({ ctx }) => {
@@ -125,7 +120,7 @@ export const issueRouter = createTRPCRouter({
     .input(
       z.object({
         name: z.string().min(1),
-        description: z.string().min(1),
+        description: z.string().optional(),
         projectId: z.number(),
         assignedTo: z.string().optional(),
         priority: z.enum(['low', 'medium', 'high']),
@@ -151,7 +146,7 @@ export const issueRouter = createTRPCRouter({
         });
       }
 
-      let assignedToId = null;
+      let assignedToId = '';
       if (input.assignedTo) {
         assignedToId = input.assignedTo;
         const teamMember = await ctx.db
