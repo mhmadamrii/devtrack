@@ -34,6 +34,6 @@ export const getLabelStatus = (currentStatus: string) => {
       return 'Completed';
 
     default:
-      return 'Nothing';
+      return 'Planning';
   }
 };

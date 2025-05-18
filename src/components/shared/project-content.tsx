@@ -26,6 +26,7 @@ import {
 
 async function ProjectCards() {
   const projects = await api.project.getAllProjects();
+  console.log(projects);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -105,7 +106,7 @@ async function ProjectCards() {
           </span>
         </div>
         <div className='text-sm'>
-          <span>12 issues</span>
+          <span>{project?.issues?.length} issues</span>
         </div>
       </CardFooter>
     </Card>

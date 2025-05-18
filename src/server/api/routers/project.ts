@@ -27,8 +27,14 @@ export const projectRouter = createTRPCRouter({
           .innerJoin(teams, eq(projectMembers.teamId, teams.id))
           .where(eq(projectMembers.projectId, project.id));
 
+        const projectIssues = await ctx.db
+          .select()
+          .from(issues)
+          .where(eq(issues.projectId, project.id));
+
         return {
           ...project,
+          issues: projectIssues,
           teamMembers,
         };
       }),

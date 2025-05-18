@@ -17,36 +17,19 @@ export const teamRouter = createTRPCRouter({
         source: z.string().optional(),
       }),
     )
-    .query(async ({ ctx, input }) => {
-      console.log('should be searched', input.source == '');
-
-      if (input.source == '') {
-        const teamsData = await ctx.db
-          .select()
-          .from(teams)
-          .where(eq(teams.companyId, ctx.companyId));
-
-        const usersData = await ctx.db
-          .select()
-          .from(user)
-          .where(eq(user.companyId, ctx.companyId));
-
-        return [...teamsData, ...usersData];
-      } else {
-        return await ctx.db
-          .select()
-          .from(teams)
-          .where(eq(teams.companyId, ctx.companyId));
-      }
+    .query(async ({ ctx }) => {
+      return await ctx.db
+        .select()
+        .from(teams)
+        .where(eq(teams.companyId, ctx.companyId));
     }),
   getTeamById: companyProcedure
     .input(
       z.object({
-        teamId: z.number(),
+        teamId: z.string(),
       }),
     )
     .query(async ({ ctx, input }) => {
-      // Get the team member details
       const teamMember = await ctx.db
         .select()
         .from(teams)
@@ -62,7 +45,6 @@ export const teamRouter = createTRPCRouter({
         });
       }
 
-      // Get the team member's projects
       const memberProjects = await ctx.db
         .select({
           projectId: projects.id,
@@ -79,7 +61,6 @@ export const teamRouter = createTRPCRouter({
         )
         .limit(3);
 
-      // Get the team member's assigned issues
       const assignedIssues = await ctx.db
         .select({
           id: issues.id,

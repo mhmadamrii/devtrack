@@ -114,7 +114,6 @@ export function OnboardingDialog({
 
   const { mutateAsync: verifyCompany } = api.company.verifyCompany.useMutation({
     onSuccess: (res: any) => {
-      console.log('Company registered:', res);
       if (res.error) {
         return toast.error(res.message);
       }
@@ -130,13 +129,14 @@ export function OnboardingDialog({
       companyId: parseInt(data.company),
       company_password: data.company_password,
     }).then((res: any) => {
-      if (res.company_password)
+      if (res.company_password) {
         updateOnboarding({
           onboarded: true,
           name: data.name,
           role: data.role,
           companyId: parseInt(data.company),
         });
+      }
     });
   }
 

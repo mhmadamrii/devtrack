@@ -1,11 +1,15 @@
 import { z } from 'zod';
-import { user } from '~/server/db/schema';
+import { teams, user } from '~/server/db/schema';
 import { eq } from 'drizzle-orm';
 
-import { createTRPCRouter, protectedProcedure } from '~/server/api/trpc';
+import {
+  companyProcedure,
+  createTRPCRouter,
+  protectedProcedure,
+} from '~/server/api/trpc';
 
 export const userRouter = createTRPCRouter({
-  updateOnboardingStatus: protectedProcedure
+  updateOnboardingStatus: companyProcedure
     .input(
       z.object({
         name: z.string().min(1),
@@ -15,12 +19,27 @@ export const userRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Make sure we have a session and user
       if (!ctx.session || !ctx.session.user) {
         throw new Error('Not authenticated');
       }
 
       const userId = ctx.session.user.id;
+
+      const newTeam = await ctx.db
+        .insert(teams)
+        .values({
+          name: input.name,
+          email: ctx.session.user.email,
+          phone: null,
+          role: 'Developer',
+          department: null,
+          companyId: ctx.companyId,
+        })
+        .returning({ id: teams.id });
+
+      if (!newTeam) {
+        return;
+      }
 
       await ctx.db
         .update(user)

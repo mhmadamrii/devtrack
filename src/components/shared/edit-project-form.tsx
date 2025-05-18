@@ -7,7 +7,6 @@ import { Calendar } from '~/components/ui/calendar';
 import { cn } from '~/lib/utils';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Checkbox } from '~/components/ui/checkbox';
 import { Avatar, AvatarFallback } from '~/components/ui/avatar';
 import { Input } from '~/components/ui/input';
 import { Textarea } from '~/components/ui/textarea';
@@ -92,6 +91,7 @@ export function EditProjectForm({ initialProject }: { initialProject: any }) {
   const router = useRouter();
   const [progress, setProgress] = useState([10]);
   const [teamMembersVal, setTeamMembersVal] = useState<string[]>([]);
+  const [statusProject, setStatusProject] = useState('');
   const memoizedProgress = useMemo(() => progress, [progress]);
 
   const { mutate: editProject, isPending: isSubmitting } =
@@ -113,7 +113,7 @@ export function EditProjectForm({ initialProject }: { initialProject: any }) {
     defaultValues: {
       name: '',
       description: '',
-      status: 'Planning',
+      status: 'planning',
     },
   });
 
@@ -126,7 +126,7 @@ export function EditProjectForm({ initialProject }: { initialProject: any }) {
       projectId: initialProject?.id as number,
       name: data.name,
       description: data.description,
-      status: data.status as
+      status: statusProject as
         | 'planning'
         | 'in_progress'
         | 'completed'
@@ -137,15 +137,13 @@ export function EditProjectForm({ initialProject }: { initialProject: any }) {
     });
   }
 
-  console.log('initial projects', initialProject);
-  console.log('form data', form.formState.errors);
-
   useEffect(() => {
     if (initialProject) {
       form.setValue('name', initialProject.name);
       form.setValue('description', initialProject.description ?? '');
-      form.setValue('status', initialProject.status.toString());
       form.setValue('startDate', initialProject.createdAt);
+      setTeamMembersVal(initialProject?.teamMembers?.map((i: any) => i.teamId));
+      setStatusProject(initialProject?.status);
       setProgress([initialProject.progress ?? 0]);
     }
   }, [initialProject]);
@@ -267,7 +265,6 @@ export function EditProjectForm({ initialProject }: { initialProject: any }) {
                           mode='single'
                           selected={field.value}
                           onSelect={field.onChange}
-                          // initialFocus prop is deprecated
                         />
                       </PopoverContent>
                     </Popover>
@@ -285,8 +282,10 @@ export function EditProjectForm({ initialProject }: { initialProject: any }) {
                   <FormLabel>Status *</FormLabel>
                   <Select
                     disabled={isSubmitting}
-                    onValueChange={field.onChange}
-                    value={field.value.toString()}
+                    onValueChange={(val) => {
+                      setStatusProject(val);
+                    }}
+                    value={statusProject}
                     defaultValue={field.value.toString()}
                   >
                     <FormControl>

@@ -5,7 +5,6 @@ import type React from 'react';
 import * as z from 'zod';
 import { useState } from 'react';
 import { api } from '~/trpc/react';
-import { Checkbox } from '~/components/ui/checkbox';
 import { useForm } from 'react-hook-form';
 import { Input } from '~/components/ui/input';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -26,7 +25,6 @@ import {
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -40,33 +38,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '~/components/ui/select';
-
-const projects = [
-  {
-    id: '1',
-    name: 'Website Redesign',
-  },
-  {
-    id: '2',
-    name: 'Mobile App Development',
-  },
-  {
-    id: '3',
-    name: 'API Integration',
-  },
-  {
-    id: '4',
-    name: 'Database Migration',
-  },
-  {
-    id: '5',
-    name: 'Security Audit',
-  },
-  {
-    id: '6',
-    name: 'User Authentication System',
-  },
-];
 
 const departments = [
   {

@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { CalendarIcon } from 'lucide-react';
 import { Button } from '~/components/ui/button';
 import { api } from '~/trpc/react';
-
 import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar';
 import {
   HoverCard,
@@ -15,7 +14,7 @@ import {
 
 interface AssigneeByProps {
   name: string;
-  teamId: number;
+  teamId: string;
 }
 
 export function AssigneeBy({ name, teamId }: AssigneeByProps) {
