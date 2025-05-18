@@ -3,17 +3,7 @@ import Link from 'next/link';
 import { Suspense } from 'react';
 import { api } from '~/trpc/server';
 import { EditProjectForm } from '~/components/shared/edit-project-form';
-import { ChevronRight, Home } from 'lucide-react';
 import { EditProjectSkeleton } from '~/components/skeletons/edit-project-skeleton';
-
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '~/components/ui/breadcrumb';
 
 async function ProjectWithData({ projectId }: { projectId: string }) {
   try {
@@ -65,8 +55,8 @@ export default async function EditProjectPage({
       <div className='flex flex-col gap-6 max-w-3xl mx-auto'>
         <h1 className='text-3xl font-bold'>Edit Project</h1>
         <p className='text-muted-foreground'>
-          Fill in the details below to create a new project. All fields marked
-          with an asterisk (*) are required.
+          Fill in the details below to edit project. All fields marked with an
+          asterisk (*) are required.
         </p>
 
         <Suspense fallback={<EditProjectSkeleton />}>

@@ -80,9 +80,6 @@ const formSchema = z
     status: z
       .string({ required_error: 'Please select a status' })
       .min(1, { message: 'Status must be filled' }),
-    teamMembers: z
-      .array(z.number())
-      .min(1, { message: 'Select at least one team member' }),
   })
   .refine((data) => data.endDate >= data.startDate, {
     message: 'End date must be after start date',
@@ -94,11 +91,12 @@ type FormValues = z.infer<typeof formSchema>;
 export function EditProjectForm({ initialProject }: { initialProject: any }) {
   const router = useRouter();
   const [progress, setProgress] = useState([10]);
+  const [teamMembersVal, setTeamMembersVal] = useState<string[]>([]);
   const memoizedProgress = useMemo(() => progress, [progress]);
 
   const { mutate: editProject, isPending: isSubmitting } =
     api.project.editProject.useMutation({
-      onSuccess: async (data) => {
+      onSuccess: async () => {
         toast.success('Successfully edited project 🚀');
         router.push('/projects');
       },
@@ -116,7 +114,6 @@ export function EditProjectForm({ initialProject }: { initialProject: any }) {
       name: '',
       description: '',
       status: 'Planning',
-      teamMembers: [],
     },
   });
 
@@ -136,9 +133,12 @@ export function EditProjectForm({ initialProject }: { initialProject: any }) {
         | 'pending',
       progress: progress[0],
       dueDate: Math.round(diffInDays),
-      teamMembers: data.teamMembers,
+      teamMembers: teamMembersVal,
     });
   }
+
+  console.log('initial projects', initialProject);
+  console.log('form data', form.formState.errors);
 
   useEffect(() => {
     if (initialProject) {
@@ -146,10 +146,6 @@ export function EditProjectForm({ initialProject }: { initialProject: any }) {
       form.setValue('description', initialProject.description ?? '');
       form.setValue('status', initialProject.status.toString());
       form.setValue('startDate', initialProject.createdAt);
-      form.setValue(
-        'teamMembers',
-        initialProject.teamMembers.map((member: any) => member.teamId),
-      );
       setProgress([initialProject.progress ?? 0]);
     }
   }, [initialProject]);
@@ -232,7 +228,6 @@ export function EditProjectForm({ initialProject }: { initialProject: any }) {
                           mode='single'
                           selected={field.value}
                           onSelect={field.onChange}
-                          // initialFocus prop is deprecated
                         />
                       </PopoverContent>
                     </Popover>
@@ -322,78 +317,46 @@ export function EditProjectForm({ initialProject }: { initialProject: any }) {
                 onProgressChange={setProgress}
               />
             </div>
-            <FormField
-              control={form.control}
-              name='teamMembers'
-              render={() => (
-                <FormItem>
-                  <div className='mb-4'>
-                    <FormLabel className='text-base'>Team Members *</FormLabel>
-                    <FormDescription>
-                      Select team members to assign to this project.
-                    </FormDescription>
+            <div className='grid grid-cols-1 md:grid-cols-2 gap-2'>
+              {teamData?.map((member, idx) => (
+                <div
+                  key={idx}
+                  className={cn(
+                    'flex border rounded px-2 cursor-pointer hover:bg-gray-900 py-1 items-center gap-2',
+                    {
+                      'bg-slate-900 border-green-500': teamMembersVal.includes(
+                        member.id,
+                      ),
+                    },
+                  )}
+                  onClick={() => {
+                    if (teamMembersVal.includes(member.id)) {
+                      const newVal = teamMembersVal.filter(
+                        (i) => i !== member.id,
+                      );
+                      setTeamMembersVal(newVal);
+                    } else {
+                      setTeamMembersVal((prev) => [...prev, member.id]);
+                    }
+                  }}
+                >
+                  <Avatar className='h-8 w-8'>
+                    <AvatarFallback>
+                      {member.name
+                        .split(' ')
+                        .map((n) => n[0])
+                        .join('')}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className='space-y-1 leading-none'>
+                    <FormLabel className='font-normal'>{member.name}</FormLabel>
+                    <p className='text-xs text-muted-foreground'>
+                      {member.role}
+                    </p>
                   </div>
-                  <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-                    {teamData?.map((member) => (
-                      <FormField
-                        key={member.id}
-                        control={form.control}
-                        name='teamMembers'
-                        render={({ field }) => {
-                          return (
-                            <FormItem
-                              key={member.id}
-                              className='flex flex-row items-center space-x-3 space-y-0'
-                            >
-                              <FormControl>
-                                <Checkbox
-                                  disabled={isSubmitting}
-                                  checked={field.value?.includes(
-                                    member.id as number,
-                                  )}
-                                  onCheckedChange={(checked) => {
-                                    console.log('checked', checked);
-                                    return checked
-                                      ? field.onChange([
-                                          ...field.value,
-                                          member.id,
-                                        ])
-                                      : field.onChange(
-                                          field.value?.filter(
-                                            (value) => value !== member.id,
-                                          ),
-                                        );
-                                  }}
-                                />
-                              </FormControl>
-                              <div className='flex items-center gap-2'>
-                                <Avatar className='h-8 w-8'>
-                                  <AvatarFallback>
-                                    {member.name
-                                      .split(' ')
-                                      .map((n) => n[0])
-                                      .join('')}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className='space-y-1 leading-none'>
-                                  <FormLabel className='font-normal'>
-                                    {member.name}
-                                  </FormLabel>
-                                  <p className='text-xs text-muted-foreground'>
-                                    {member.role}
-                                  </p>
-                                </div>
-                              </div>
-                            </FormItem>
-                          );
-                        }}
-                      />
-                    ))}
-                  </div>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                </div>
+              ))}
+            </div>
             <div className='flex justify-end gap-4 pt-4'>
               <Button
                 className='cursor-pointer'

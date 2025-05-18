@@ -194,11 +194,10 @@ export const projectRouter = createTRPCRouter({
         status: z.enum(['planning', 'in_progress', 'completed', 'pending']),
         progress: z.number().default(0),
         dueDate: z.number().optional(),
-        teamMembers: z.array(z.number().min(1)),
+        teamMembers: z.array(z.string().min(1)),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // First verify the project belongs to the user's company
       const project = await ctx.db
         .select()
         .from(projects)
@@ -262,32 +261,6 @@ export const projectRouter = createTRPCRouter({
         };
       });
     }),
-  create: companyProcedure
-    .input(
-      z.object({
-        name: z.string().min(1),
-        description: z.string().min(1),
-        status: z.enum(['planning', 'in_progress', 'completed', 'pending']),
-        progress: z.number().default(0),
-        dueDate: z.number().optional(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const result = await ctx.db
-        .insert(projects)
-        .values({
-          name: input.name,
-          description: input.description,
-          status: input.status,
-          progress: input.progress,
-          dueDate: input.dueDate,
-          companyId: ctx.companyId,
-        })
-        .returning({ id: projects.id });
-
-      return result[0];
-    }),
-
   addTeamMember: protectedProcedure
     .input(
       z.object({
