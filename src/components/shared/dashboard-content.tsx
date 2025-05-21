@@ -26,12 +26,8 @@ import {
   MoreHorizontal,
   AlertCircle,
   Plus,
-  Bug,
   Activity,
   Zap,
-  Users,
-  LineChart,
-  Target,
 } from 'lucide-react';
 
 import {
@@ -355,14 +351,7 @@ export function DashboardContent() {
                         <TableCell>{issue.assignedTo}</TableCell>
                         <TableCell>
                           <AssigneeBy
-                            teamId={
-                              parseInt(
-                                issue.assignedTo
-                                  .toString()
-                                  .replace(/[^0-9]/g, '')
-                                  .slice(0, 9),
-                              ) || 0
-                            }
+                            teamId={issue.assignedTo}
                             name={issue.assigneeName ?? ''}
                           />
                         </TableCell>

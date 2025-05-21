@@ -3,38 +3,39 @@ import { Skeleton } from '../ui/skeleton';
 export function TableSkeleton() {
   return (
     <>
-      {Array.from({ length: 3 }).map((_, rowIdx) => (
-        <tr key={rowIdx}>
-          {/* Name (flex with gap) */}
+      {Array.from({ length: 5 }).map((_, rowIdx) => (
+        <tr key={rowIdx} className="animate-pulse">
+          {/* Issue name */}
           <td>
             <div className='flex items-center gap-3'>
-              <Skeleton className='h-4 w-32' />
+              <Skeleton className='h-5 w-40' />
             </div>
           </td>
-          {/* Role */}
+          {/* Date Assigned */}
           <td>
-            <Skeleton className='h-4 w-20' />
+            <Skeleton className='h-4 w-24' />
           </td>
-          {/* Department */}
+          {/* Assigned To */}
           <td>
-            <Skeleton className='h-4 w-28' />
-          </td>
-          {/* Projects (badge-like) */}
-          <td>
-            <div className='flex flex-wrap gap-1'>
-              <Skeleton className='h-6 w-24 rounded-full' />
+            <div className='flex items-center gap-2'>
+              <Skeleton className='h-8 w-8 rounded-full' />
+              <Skeleton className='h-4 w-28' />
             </div>
           </td>
-          {/* Status (badge-like) */}
+          {/* Assigned By */}
+          <td>
+            <div className='flex items-center gap-2'>
+              <Skeleton className='h-8 w-8 rounded-full' />
+              <Skeleton className='h-4 w-24' />
+            </div>
+          </td>
+          {/* Priority (badge-like) */}
           <td>
             <Skeleton className='h-6 w-16 rounded-full' />
           </td>
-          {/* Contact (two buttons) */}
+          {/* Status (badge-like) */}
           <td>
-            <div className='flex items-center gap-2'>
-              <Skeleton className='h-8 w-8 rounded-md' />
-              <Skeleton className='h-8 w-8 rounded-md' />
-            </div>
+            <Skeleton className='h-6 w-20 rounded-md' />
           </td>
           {/* Actions (right-aligned button) */}
           <td className='text-right'>

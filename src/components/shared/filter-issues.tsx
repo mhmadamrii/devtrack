@@ -46,17 +46,20 @@ export function FilterIssues() {
       <CardContent>
         <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-4'>
           <div className='flex flex-col gap-2'>
-            <label className='text-sm font-medium'>Search</label>
-            <div className='relative'>
-              <Search className='absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground' />
-              <Input
-                type='search'
-                placeholder='Search issues...'
-                className='pl-8'
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
+            <label className='text-sm font-medium'>Category</label>
+            <Select value={selectedProject} onValueChange={setSelectedProject}>
+              <SelectTrigger className='w-full'>
+                <SelectValue placeholder='Category' />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='all'>All Projects</SelectItem>
+                {projects.map((project) => (
+                  <SelectItem key={project.id} value={project.id}>
+                    {project.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className='flex flex-col gap-2'>

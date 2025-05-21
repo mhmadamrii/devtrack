@@ -8,6 +8,7 @@ import { Button } from '~/components/ui/button';
 import { Badge } from '~/components/ui/badge';
 import { Progress } from '~/components/ui/progress';
 import { getLabelStatus } from '~/lib/utils';
+import { ProjectCardsSkeleton } from '~/components/skeletons/project-cards-skeleton';
 
 import {
   Card,
@@ -26,7 +27,6 @@ import {
 
 async function ProjectCards() {
   const projects = await api.project.getAllProjects();
-  console.log(projects);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -64,8 +64,6 @@ async function ProjectCards() {
               <DropdownMenuItem>
                 <Link href={`/projects/edit/${project.id}`}>Edit Project</Link>
               </DropdownMenuItem>
-              <DropdownMenuItem>Manage Team</DropdownMenuItem>
-              <DropdownMenuItem>View Issues</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -120,7 +118,7 @@ export async function ProjectsContent() {
         <ProjectFilter />
 
         <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense fallback={<ProjectCardsSkeleton />}>
             <ProjectCards />
           </Suspense>
         </div>
