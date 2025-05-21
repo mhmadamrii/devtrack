@@ -2,6 +2,7 @@
 
 import { api } from '~/trpc/react';
 import { useRouter } from 'next/navigation';
+import { authClient } from '~/server/auth/client';
 import { Badge } from '../ui/badge';
 import { toast } from 'sonner';
 import { Spinner } from '~/components/shared/spinner';
@@ -16,10 +17,15 @@ import {
 export function StatusTable({
   currentStatus,
   issueId,
+  assignedTo,
 }: {
   currentStatus: string;
   issueId: number;
+  assignedTo: string;
 }) {
+  const { data } = authClient.useSession();
+  console.log('data', data);
+  console.log('assignedTo', assignedTo);
   const router = useRouter();
   const utils = api.useUtils();
   const { mutate: updateStatus, isPending } =
@@ -72,7 +78,13 @@ export function StatusTable({
       </ContextMenuTrigger>
       <ContextMenuContent>
         <ContextMenuItem
-          onClick={() => updateStatus({ issueId, status: 'open' })}
+          onClick={() => {
+            if (assignedTo !== data?.user.id) {
+              toast.error('You are not allowed to change the status');
+              return;
+            }
+            updateStatus({ issueId, status: 'open' });
+          }}
         >
           Open
         </ContextMenuItem>

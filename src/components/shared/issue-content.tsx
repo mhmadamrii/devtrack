@@ -59,7 +59,11 @@ async function IssuesCard() {
         </Badge>
       </TableCell>
       <TableCell>
-        <StatusTable issueId={issue.id} currentStatus={issue.status} />
+        <StatusTable
+          assignedTo={issue.assignedTo}
+          issueId={issue.id}
+          currentStatus={issue.status}
+        />
       </TableCell>
       <TableCell className='text-right'>
         <DropdownMenu>
